@@ -4,89 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>A Terra Sob as Unhas</title>
-<meta name="description" content="Ficha de personagem em branco para montar do seu jeito, com rolagem de dados e sala em tempo real para o mestre.">
+<meta name="description" content="Ficha de personagem para montar do seu jeito, com dados e sala em tempo real.">
 <meta name="theme-color" content="#2F5A38">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='5' fill='%232F5A38'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='700' text-anchor='middle' fill='%23F1F1E8'%3Ed%25%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 29 9.5v13L16 30 3 22.5v-13Z' fill='%232F5A38'/%3E%3Cpath d='M16 7 24.5 21h-17Z' fill='none' stroke='%23F1F1E8' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
-<link rel="stylesheet" href="estilo.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <script type="module" crossorigin src="./assets/index-wOt9JUqa.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/Mesa-4K-ZEYYt.js">
+  <link rel="stylesheet" crossorigin href="./assets/Mesa-D380j900.css">
 </head>
 <body>
-
-<header class="topo">
-  <div class="topo-in">
-    <span class="salvo" id="salvo" aria-live="polite">Carregando…</span>
-    <div class="topo-acoes">
-      <button type="button" class="botao-topo sala-botao" id="btn-sala" data-acao="sala">Sala</button>
-      <button type="button" class="botao-topo" id="btn-desfazer" data-acao="desfazer" disabled>Desfazer</button>
-      <button type="button" class="botao-topo principal" id="btn-editar" data-acao="editar" aria-pressed="false">Editar ficha</button>
-      <div class="menu-wrap">
-        <button type="button" class="botao-topo" id="btn-menu" data-acao="menu" aria-expanded="false" aria-controls="menu">Arquivo</button>
-        <div class="menu" id="menu" role="menu" hidden>
-          <button type="button" role="menuitem" data-acao="exportar">Exportar ficha (.json)</button>
-          <button type="button" role="menuitem" data-acao="importar">Importar ficha…</button>
-          <button type="button" role="menuitem" data-acao="em-branco">Começar ficha em branco</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
-
-<main class="folha" id="ficha"></main>
-
-<div class="barra-dados" id="barra">
-  <div class="toast" id="toast" role="status" hidden>
-    <span id="toast-txt"></span>
-    <button type="button" id="toast-desfazer" data-acao="desfazer">Desfazer</button>
-  </div>
-  <div class="barra-in">
-    <div class="resultado" aria-live="polite">
-      <span class="num" id="r-num">—</span>
-      <div class="r-txt">
-        <div class="veredito" id="r-ver">Nenhuma rolagem ainda</div>
-        <div class="contra" id="r-contra">Toque em d% numa perícia ou no nome de um atributo</div>
-        <div class="historico" id="r-hist"></div>
-      </div>
-    </div>
-    <div class="controles-dado">
-      <div class="modo" role="group" aria-label="Dado extra no d100">
-        <button type="button" data-acao="modo" data-modo="-1" aria-pressed="false" title="Rola duas dezenas e fica com a pior">Penalidade</button>
-        <button type="button" data-acao="modo" data-modo="0" aria-pressed="true">Normal</button>
-        <button type="button" data-acao="modo" data-modo="1" aria-pressed="false" title="Rola duas dezenas e fica com a melhor">Bônus</button>
-      </div>
-      <form class="expr" id="form-expr" autocomplete="off">
-        <input id="expr" placeholder="2d6+1" aria-label="Rolar dados livres, por exemplo 1d6+1d4" spellcheck="false">
-        <button type="submit" class="botao-rolar">Rolar</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<dialog id="dlg-opcoes" aria-labelledby="dlg-opcoes-titulo">
-  <form method="dialog" class="dlg">
-    <h3 id="dlg-opcoes-titulo">Opções do atributo</h3>
-    <label class="opcao"><input type="checkbox" id="op-fracoes"> Mostrar metade e quinto</label>
-    <label class="opcao"><input type="checkbox" id="op-rolavel"> Rolar ao tocar no nome</label>
-    <label class="opcao"><input type="checkbox" id="op-maximo"> Tem valor máximo, com botões − e +</label>
-    <label class="opcao"><input type="checkbox" id="op-texto"> Valor em texto (ex.: +1d4)</label>
-    <p class="dica">Com valor em texto, tocar no nome rola a expressão escrita no valor.</p>
-    <div class="dlg-acoes">
-      <button type="submit" value="cancelar" class="botao">Cancelar</button>
-      <button type="submit" value="ok" class="botao primario">Aplicar</button>
-    </div>
-  </form>
-</dialog>
-
-<dialog id="dlg-sala" aria-label="Sala">
-  <form method="dialog" class="dlg" id="sala-corpo"></form>
-</dialog>
-
-<input type="file" id="arquivo" accept="application/json,.json" hidden>
-
-<script src="vendor/Sortable.min.js"></script>
-<script src="vendor/mqtt.min.js"></script>
-<script src="sala.js"></script>
-<script src="ficha.js"></script>
+<div id="raiz"></div>
+<noscript>Esta ficha precisa de JavaScript ligado.</noscript>
 </body>
 </html>

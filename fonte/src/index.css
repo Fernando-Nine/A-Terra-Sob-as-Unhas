@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* Paleta da ficha: papel, tinta verde de caderno de campo e rosa de carimbo.
+   Tudo vira utilitario do Tailwind (bg-papel, text-verde, border-rosa-borda…)
+   e o modo escuro so troca as variaveis. */
+@theme {
+  --font-display: "Special Elite", "Courier New", monospace;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --color-papel: #F1F1E8;
+  --color-folha: #FBFBF6;
+  --color-tinta: #1F2A22;
+  --color-tinta-2: #5A665C;
+  --color-linha: #D8DCCF;
+  --color-linha-forte: #B7BEAE;
+  --color-verde: #2F5A38;
+  --color-verde-claro: #3E7449;
+  --color-verde-borda: #8FAE92;
+  --color-verde-fundo: #E8F0E6;
+  --color-rosa: #A8423D;
+  --color-rosa-borda: #CF9591;
+  --color-rosa-fundo: #F6E5E2;
+  --color-ambar: #8A5F0E;
+  --color-ambar-fundo: #F5ECD6;
+  --color-sobre-verde: #F4F7F1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-papel: #111713;
+    --color-folha: #18201A;
+    --color-tinta: #E3E8DF;
+    --color-tinta-2: #9AA79B;
+    --color-linha: #2A352C;
+    --color-linha-forte: #435245;
+    --color-verde: #8FC498;
+    --color-verde-claro: #A6D3AD;
+    --color-verde-borda: #3E5C43;
+    --color-verde-fundo: #1D2A20;
+    --color-rosa: #E39A94;
+    --color-rosa-borda: #6E3A37;
+    --color-rosa-fundo: #2A1D1C;
+    --color-ambar: #E0B868;
+    --color-ambar-fundo: #2B2416;
+    --color-sobre-verde: #10170F;
+  }
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-papel text-tinta font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  button { cursor: pointer; }
+  button:disabled { cursor: default; }
+  :focus-visible { outline: 2px solid var(--color-verde); outline-offset: 2px; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+  dialog::backdrop { background: rgb(12 18 14 / .5); }
+}
+
+@layer components {
+  /* Campo que parece texto da ficha ate receber foco. */
+  .campo {
+    @apply w-full min-w-0 rounded-md border border-transparent bg-transparent px-1.5 py-1
+      hover:border-linha focus:border-transparent focus:outline-2 focus:outline-verde;
+  }
+  .botao {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-linha-forte
+      bg-folha px-4 font-medium text-tinta transition-colors hover:border-verde hover:text-verde
+      disabled:opacity-40 disabled:hover:border-linha-forte disabled:hover:text-tinta;
+  }
+  .botao-primario {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-verde px-4
+      font-semibold text-sobre-verde transition-colors hover:bg-verde-claro;
+  }
+  .botao-icone {
+    @apply inline-grid size-10 place-items-center rounded-md text-tinta-2 transition-colors
+      hover:bg-verde-fundo hover:text-tinta disabled:opacity-30 disabled:hover:bg-transparent;
+  }
+  .rotulo {
+    @apply text-[11px] font-medium uppercase tracking-[0.1em] text-tinta-2;
+  }
+  .titulo-secao {
+    @apply font-display text-lg uppercase tracking-[0.06em];
+  }
+}
+
+@keyframes tremor { 0%, 100% { transform: none; } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
+@keyframes entra { from { background: var(--color-verde-fundo); } to { background: transparent; } }
+@keyframes piscou { from { box-shadow: 0 0 0 3px var(--color-verde-borda); } to { box-shadow: 0 0 0 3px transparent; } }
+@media (prefers-reduced-motion: no-preference) {
+  .anim-tremor { animation: tremor .3s ease-in-out; }
+  .anim-entra { animation: entra .6s ease-out; }
+  .anim-piscou { animation: piscou 1.2s ease-out; }
+}
