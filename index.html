@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Terra Sob as Unhas</title>
+<meta name="description" content="Ficha editável da repórter: arraste, adicione e remova tudo, e role os dados direto na ficha.">
+<meta name="theme-color" content="#2F5A38">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='5' fill='%232F5A38'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='700' text-anchor='middle' fill='%23F1F1E8'%3Ed%25%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-in">
+    <span class="salvo" id="salvo" aria-live="polite">Carregando…</span>
+    <div class="topo-acoes">
+      <button type="button" class="botao-topo" id="btn-desfazer" data-acao="desfazer" disabled>Desfazer</button>
+      <button type="button" class="botao-topo principal" id="btn-editar" data-acao="editar" aria-pressed="false">Editar ficha</button>
+      <div class="menu-wrap">
+        <button type="button" class="botao-topo" id="btn-menu" data-acao="menu" aria-expanded="false" aria-controls="menu">Arquivo</button>
+        <div class="menu" id="menu" role="menu" hidden>
+          <button type="button" role="menuitem" data-acao="exportar">Exportar ficha (.json)</button>
+          <button type="button" role="menuitem" data-acao="importar">Importar ficha…</button>
+          <button type="button" role="menuitem" data-acao="restaurar">Restaurar ficha original</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="folha" id="ficha"></main>
+
+<div class="barra-dados" id="barra">
+  <div class="toast" id="toast" role="status" hidden>
+    <span id="toast-txt"></span>
+    <button type="button" id="toast-desfazer" data-acao="desfazer">Desfazer</button>
+  </div>
+  <div class="barra-in">
+    <div class="resultado" aria-live="polite">
+      <span class="num" id="r-num">—</span>
+      <div class="r-txt">
+        <div class="veredito" id="r-ver">Nenhuma rolagem ainda</div>
+        <div class="contra" id="r-contra">Toque em d% numa perícia ou no nome de um atributo</div>
+        <div class="historico" id="r-hist"></div>
+      </div>
+    </div>
+    <div class="controles-dado">
+      <div class="modo" role="group" aria-label="Dado extra no d100">
+        <button type="button" data-acao="modo" data-modo="-1" aria-pressed="false" title="Rola duas dezenas e fica com a pior">Penalidade</button>
+        <button type="button" data-acao="modo" data-modo="0" aria-pressed="true">Normal</button>
+        <button type="button" data-acao="modo" data-modo="1" aria-pressed="false" title="Rola duas dezenas e fica com a melhor">Bônus</button>
+      </div>
+      <form class="expr" id="form-expr" autocomplete="off">
+        <input id="expr" placeholder="2d6+1" aria-label="Rolar dados livres, por exemplo 1d6+1d4" spellcheck="false">
+        <button type="submit" class="botao-rolar">Rolar</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<dialog id="dlg-opcoes" aria-labelledby="dlg-opcoes-titulo">
+  <form method="dialog" class="dlg">
+    <h3 id="dlg-opcoes-titulo">Opções do atributo</h3>
+    <label class="opcao"><input type="checkbox" id="op-fracoes"> Mostrar metade e quinto</label>
+    <label class="opcao"><input type="checkbox" id="op-rolavel"> Rolar ao tocar no nome</label>
+    <label class="opcao"><input type="checkbox" id="op-maximo"> Tem valor máximo, com botões − e +</label>
+    <label class="opcao"><input type="checkbox" id="op-texto"> Valor em texto (ex.: +1d4)</label>
+    <p class="dica">Com valor em texto, tocar no nome rola a expressão escrita no valor.</p>
+    <div class="dlg-acoes">
+      <button type="submit" value="cancelar" class="botao">Cancelar</button>
+      <button type="submit" value="ok" class="botao primario">Aplicar</button>
+    </div>
+  </form>
+</dialog>
+
+<input type="file" id="arquivo" accept="application/json,.json" hidden>
+
+<script src="vendor/Sortable.min.js"></script>
+<script src="ficha.js"></script>
+</body>
+</html>
