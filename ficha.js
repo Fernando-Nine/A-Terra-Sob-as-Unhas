@@ -104,44 +104,9 @@
     return f;
   }
 
-  function fichaOriginal() {
-    const A = (rotulo, valor, extra) => Object.assign(
-      { rotulo, valor: String(valor), fracoes: true, rolavel: true, maximo: null, texto: false }, extra || {});
-    const P = (rotulo, valor) => ({ rotulo, valor: String(valor) });
-    return normalizar({
-      titulo: 'A Terra Sob as Unhas',
-      secoes: [
-        { tipo: 'campos', titulo: '', cor: 'neutro', itens: [
-          { rotulo: 'Personagem', valor: '' }, { rotulo: 'Ocupação', valor: '' }, { rotulo: 'Jogador(a)', valor: '' },
-        ] },
-        { tipo: 'atributos', titulo: 'Características', cor: 'verde', itens: [
-          A('FOR', 55), A('CON', 55), A('TAM', 50), A('DES', 65), A('APA', 60), A('INT', 70), A('POD', 55), A('EDU', 70),
-        ] },
-        { tipo: 'atributos', titulo: '', cor: 'rosa', itens: [
-          A('PV', 10, { fracoes: false, rolavel: false, maximo: '10' }),
-          A('PM', 11, { fracoes: false, rolavel: false, maximo: '11' }),
-          A('SAN', 55, { fracoes: false, maximo: '55' }),
-          A('Sorte', 50, { fracoes: false }),
-          A('MOV', 9, { fracoes: false, rolavel: false }),
-          A('Corp.', 0, { fracoes: false, rolavel: false }),
-          A('Dano B.', '—', { fracoes: false, texto: true }),
-        ] },
-        { tipo: 'pericias', titulo: 'Perícias', cor: 'verde', itens: [
-          P('Lábia', 60), P('Persuasão', 55), P('Escutar', 55), P('Encontrar', 55), P('Direito', 35), P('Informática', 50),
-          P('Dirigir Automóvel', 45), P('Esquiva', 50), P('Fotografia', 55), P('Disfarce', 35),
-          P('Português (idioma próprio)', 70), P('Inglês', 40),
-        ] },
-        { tipo: 'texto', titulo: 'Segredo Pequeno', cor: 'rosa',
-          texto: 'Já publicou uma informação sabendo que colocaria uma fonte em risco, porque a pauta era grande demais para recusar.' },
-        { tipo: 'itens', titulo: 'Equipamento', cor: 'neutro', itens: [
-          'Gravador digital', 'Câmera', 'Notebook', 'Carteira de imprensa', 'Carro pequeno', 'Caderno de contatos em código próprio',
-        ].map((nome) => ({ nome, qtd: '1' })) },
-        { tipo: 'marcadores', titulo: 'Marcadores de jogo', cor: 'neutro', itens: [
-          { rotulo: 'Sanidade', total: 10, cor: 'verde' }, { rotulo: 'Raiz', total: 5, cor: 'rosa' },
-        ] },
-        { tipo: 'texto', titulo: 'Anotações', cor: 'neutro', texto: '' },
-      ],
-    });
+  // Ficha nova comeca em branco: cada pessoa monta a sua.
+  function fichaVazia() {
+    return { titulo: '', secoes: [] };
   }
 
   function novaSecao(tipo) {
@@ -167,12 +132,13 @@
         if (o && Array.isArray(o.secoes)) return normalizar(o);
       }
     } catch (e) { /* armazenamento indisponivel: comeca da ficha original */ }
-    return fichaOriginal();
+    return fichaVazia();
   }
 
   let estado = carregar();
   let editando = false;
   try { editando = localStorage.getItem(CHAVE_EDITANDO) === '1'; } catch (e) { /* segue sem */ }
+  if (!estado.secoes.length) editando = true; // ficha vazia: ja abre pronta pra montar
   const pilha = [];
   let focarDepois = null;
 
@@ -191,6 +157,7 @@
     } catch (e) {
       status('Não consegui salvar neste navegador. Use Arquivo › Exportar para guardar uma cópia.');
     }
+    publicarFicha();
   }
   function salvar() {
     status('Salvando…');
@@ -356,10 +323,12 @@
     bt.textContent = editando ? 'Concluir' : 'Editar ficha';
 
     const titulo = editando
-      ? `<input class="titulo-ficha" id="titulo-ficha" value="${esc(estado.titulo)}" placeholder="Título da ficha" aria-label="Título da ficha">`
-      : `<h1 class="titulo-ficha">${esc(estado.titulo) || 'Ficha'}</h1>`;
+      ? `<input class="titulo-ficha" id="titulo-ficha" value="${esc(estado.titulo)}" placeholder="Nome da personagem" aria-label="Nome da personagem">`
+      : `<h1 class="titulo-ficha${estado.titulo ? '' : ' sem-nome'}">${esc(estado.titulo) || 'Personagem sem nome'}</h1>`;
     const vazio = estado.secoes.length ? '' :
-      `<p class="vazio">Esta ficha está vazia. ${editando ? 'Adicione uma seção abaixo.' : 'Toque em <b>Editar ficha</b> para montar a sua.'}</p>`;
+      `<p class="vazio">${editando
+        ? 'Ficha em branco. Dê um nome à personagem acima e monte a ficha com as seções abaixo: atributos, perícias, itens, textos, marcadores ou campos.'
+        : 'Ficha em branco. Toque em <b>Editar ficha</b> para montar a sua.'}</p>`;
     $('ficha').innerHTML = titulo + vazio +
       `<div class="secoes" id="secoes">${estado.secoes.map(renderSecao).join('')}</div>` +
       (editando ? painelNovaSecao() : '');
@@ -480,10 +449,12 @@
       }
       case 'exportar': fecharMenu(); exportar(); break;
       case 'importar': fecharMenu(); $('arquivo').click(); break;
-      case 'restaurar':
+      case 'em-branco':
         fecharMenu();
-        mudar(() => { estado = fichaOriginal(); }, 'Ficha original restaurada');
+        mudar(() => { estado = fichaVazia(); editando = true; }, 'Ficha em branco');
         break;
+      case 'sala': abrirSala(); break;
+      case 'sair-sala': sairDaSala(true); abrirSala(); break;
 
       case 'mais': case 'menos': {
         if (!it) break;
@@ -709,6 +680,7 @@
     $('r-ver').textContent = veredito;
     $('r-ver').className = 'veredito' + (classe ? ' ' + classe : '');
     $('r-contra').textContent = contra;
+    publicarRolagem(num, veredito, classe, contra);
     historico.unshift(registro);
     historico.length = Math.min(historico.length, 7);
     $('r-hist').textContent = historico.slice(1).join('  ·  ');
@@ -720,6 +692,129 @@
     if (v) rolarLivre(v, '');
   });
 
+  // ---------- sala ----------
+  // O jogador publica a ficha inteira a cada gravacao e cada rolagem; o mestre
+  // assina a sala (mestre.html). Transporte em sala.js.
+  const CHAVE_SALA = 'terra-sob-as-unhas:sala';
+  const cid = window.Sala ? Sala.meuCid() : null;
+  let sala = null; // { codigo, t: topicos, cliente, estado }
+  const TEXTO_SALA = {
+    conectando: 'Conectando…',
+    conectado: 'Conectado. O mestre vê sua ficha em tempo real.',
+    reconectando: 'Conexão caiu, tentando de novo…',
+    'sem-conexao': 'Sem conexão com a sala. Sua ficha continua salva aqui e vai quando voltar.',
+  };
+
+  function publicarFicha() {
+    if (!sala || !sala.cliente.connected) return;
+    sala.cliente.publish(sala.t.ficha(cid), JSON.stringify({ cid, t: Date.now(), ficha: estado }), { qos: 1, retain: true });
+  }
+
+  function publicarRolagem(num, veredito, classe, contra) {
+    if (!sala || !sala.cliente.connected) return;
+    sala.cliente.publish(sala.t.rolagem, JSON.stringify({
+      cid, t: Date.now(), nome: estado.titulo, num, veredito, classe, contra,
+    }), { qos: 0 });
+  }
+
+  function entrarNaSala(codigo) {
+    codigo = Sala.limparCodigo(codigo);
+    if (!codigo) return;
+    sairDaSala(false);
+    const t = Sala.topicos(codigo);
+    sala = { codigo, t, estado: 'conectando', cliente: null };
+    try {
+      sala.cliente = Sala.conectar({
+        will: { topic: t.online(cid), payload: '0', qos: 1, retain: true },
+        aoMudar: (e) => { if (sala && sala.codigo === codigo) { sala.estado = e; atualizarSala(); } },
+        aoConectar: (c) => { c.publish(t.online(cid), '1', { qos: 1, retain: true }); publicarFicha(); },
+      });
+    } catch (e) {
+      sala = null;
+      toast('Não consegui carregar a conexão da sala. Recarregue a página.', false);
+      return;
+    }
+    try { localStorage.setItem(CHAVE_SALA, codigo); } catch (e) { /* ok */ }
+    atualizarSala();
+  }
+
+  // Sair de verdade (pelo botao) tira a ficha da sala; trocar de sala ou fechar a aba nao.
+  function sairDaSala(apagar) {
+    if (!sala) return;
+    const { cliente, t } = sala;
+    sala = null;
+    if (cliente) {
+      if (apagar && cliente.connected) {
+        cliente.publish(t.ficha(cid), '', { qos: 1, retain: true });
+        cliente.publish(t.online(cid), '', { qos: 1, retain: true });
+      }
+      cliente.end(false);
+    }
+    if (apagar) { try { localStorage.removeItem(CHAVE_SALA); } catch (e) { /* ok */ } }
+    atualizarSala();
+  }
+
+  function atualizarSala() {
+    const b = $('btn-sala');
+    b.textContent = sala ? `Sala ${sala.codigo}` : 'Sala';
+    b.dataset.estado = sala ? sala.estado : '';
+    if ($('dlg-sala').open) preencherDialogoSala();
+  }
+
+  function preencherDialogoSala() {
+    const corpo = $('sala-corpo');
+    if (sala) {
+      corpo.innerHTML = `
+        <h3>Sala <span class="codigo">${esc(sala.codigo)}</span></h3>
+        <p class="sala-estado" data-estado="${sala.estado}">${TEXTO_SALA[sala.estado] || ''}</p>
+        <p class="dica">Sua ficha e suas rolagens aparecem para o mestre enquanto você estiver aqui.</p>
+        <div class="dlg-acoes">
+          <button type="button" class="botao perigo-texto" data-acao="sair-sala">Sair da sala</button>
+          <button type="submit" value="fechar" class="botao primario">Fechar</button>
+        </div>`;
+    } else {
+      corpo.innerHTML = `
+        <h3>Entrar numa sala</h3>
+        <p class="dica">Digite o código que o mestre passou. Ele vai ver sua ficha e suas rolagens em tempo real.</p>
+        <div class="sala-entrar">
+          <input id="sala-codigo" placeholder="Código, ex.: K7PX2M" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Código da sala">
+          <button type="button" class="botao primario" id="sala-entrar">Entrar</button>
+        </div>
+        <p class="dica sala-mestre">É o mestre? <a href="mestre.html">Abrir o painel do mestre</a></p>
+        <div class="dlg-acoes"><button type="submit" value="fechar" class="botao">Fechar</button></div>`;
+    }
+  }
+
+  function abrirSala() {
+    preencherDialogoSala();
+    if (!$('dlg-sala').open) $('dlg-sala').showModal();
+    const campo = $('sala-codigo');
+    if (campo) campo.focus();
+  }
+
+  $('dlg-sala').addEventListener('click', (e) => {
+    if (e.target.id !== 'sala-entrar') return;
+    const codigo = Sala.limparCodigo($('sala-codigo').value);
+    if (!codigo) { $('sala-codigo').focus(); return; }
+    entrarNaSala(codigo);
+    $('dlg-sala').close();
+    toast(`Você entrou na sala ${codigo}`, false);
+  });
+  $('dlg-sala').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.id === 'sala-codigo') { e.preventDefault(); $('sala-entrar').click(); }
+  });
+
+  function iniciarSala() {
+    if (!window.Sala) { $('btn-sala').hidden = true; return; }
+    const daUrl = Sala.limparCodigo(new URLSearchParams(location.search).get('sala'));
+    let guardada = '';
+    try { guardada = localStorage.getItem(CHAVE_SALA) || ''; } catch (e) { /* ok */ }
+    const codigo = daUrl || guardada;
+    if (codigo) entrarNaSala(codigo);
+    if (daUrl) toast(`Você entrou na sala ${daUrl}`, false);
+    atualizarSala();
+  }
+
   // A barra de dados e fixa; o fim da ficha nao pode ficar escondido atras dela.
   const barra = $('barra');
   const ajustarFolga = () => { document.body.style.paddingBottom = barra.offsetHeight + 32 + 'px'; };
@@ -730,5 +825,6 @@
   ajustarFolga();
   let jaSalva = false;
   try { jaSalva = !!localStorage.getItem(CHAVE); } catch (e) { /* sem armazenamento */ }
-  status(jaSalva ? 'Salvo neste aparelho' : 'Ficha original · suas mudanças salvam neste aparelho');
+  status(jaSalva ? 'Salvo neste aparelho' : 'Ficha nova · suas mudanças salvam neste aparelho');
+  iniciarSala();
 })();

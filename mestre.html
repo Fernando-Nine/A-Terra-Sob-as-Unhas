@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mestre · A Terra Sob as Unhas</title>
+<meta name="description" content="Painel do mestre: as fichas e as rolagens de todos na sala, em tempo real.">
+<meta name="theme-color" content="#2F5A38">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='5' fill='%232F5A38'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='700' text-anchor='middle' fill='%23F1F1E8'%3Ed%25%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body class="pagina-mestre">
+
+<header class="topo">
+  <div class="topo-in">
+    <span class="salvo" id="conexao" aria-live="polite">Painel do mestre</span>
+    <div class="topo-acoes">
+      <a class="botao-topo" href="./">Minha ficha</a>
+    </div>
+  </div>
+</header>
+
+<main class="mesa">
+  <section class="abrir-sala" id="abrir-sala" hidden>
+    <h1 class="titulo-ficha">Painel do mestre</h1>
+    <p>Crie uma sala e passe o código para os jogadores. Aqui você vê a ficha de cada um mudando enquanto eles jogam, e todas as rolagens.</p>
+    <div class="acoes-sala">
+      <button type="button" class="botao primario" id="criar-sala">Criar sala nova</button>
+    </div>
+    <p class="dica">Ou abra uma sala que já existe:</p>
+    <form class="sala-entrar" id="form-abrir">
+      <input id="codigo-existente" placeholder="Código, ex.: K7PX2M" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Código da sala">
+      <button type="submit" class="botao">Abrir</button>
+    </form>
+  </section>
+
+  <section class="painel" id="painel" hidden>
+    <div class="painel-cab">
+      <div>
+        <p class="eyebrow">Sala</p>
+        <h1 class="codigo-grande" id="codigo"></h1>
+      </div>
+      <div class="convite">
+        <label for="link-jogadores">Link para os jogadores</label>
+        <div class="convite-linha">
+          <input id="link-jogadores" readonly>
+          <button type="button" class="botao" id="copiar-link">Copiar</button>
+        </div>
+        <p class="dica">Ou eles tocam em <b>Sala</b> na ficha e digitam o código.</p>
+      </div>
+    </div>
+
+    <div class="mesa-grade">
+      <section class="rolagens" aria-labelledby="t-rolagens">
+        <h2 class="secao-titulo" id="t-rolagens">Rolagens</h2>
+        <ol class="feed" id="feed"></ol>
+        <p class="dica" id="feed-vazio">As rolagens dos jogadores aparecem aqui assim que acontecem.</p>
+      </section>
+
+      <section class="fichas-mesa" aria-labelledby="t-fichas">
+        <h2 class="secao-titulo" id="t-fichas">Fichas <span class="contagem" id="contagem"></span></h2>
+        <p class="dica" id="fichas-vazio">Nenhuma ficha ainda. Quando um jogador entrar na sala, a ficha dele aparece aqui.</p>
+        <div class="cartoes" id="cartoes"></div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<div class="toast toast-solto" id="toast" role="status" hidden><span id="toast-txt"></span></div>
+
+<script src="vendor/mqtt.min.js"></script>
+<script src="sala.js"></script>
+<script src="mestre.js"></script>
+</body>
+</html>
