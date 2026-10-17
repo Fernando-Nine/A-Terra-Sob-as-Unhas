@@ -10,7 +10,7 @@ Você está trabalhando no projeto **A TERRA SOB AS UNHAS**, um site estático e
 - Preservar português brasileiro, estética de horror investigativo e bom funcionamento em desktop/celular.
 - Dois ambientes distintos: `site/index.html` para jogadores (publicado); `site/escudo_mestre.html` para o Mestre (só local).
 - Não revelar spoilers do Mestre na página dos jogadores, no JavaScript dos jogadores ou em arquivos publicados com ela.
-- A versão atual salva dados localmente. Não fingir sincronização ou conta de usuário inexistente. Para multiplayer real, propor e implementar autenticação/autorização e persistência em backend com consentimento do usuário.
+- As fichas ficam salvas localmente. A **sala ao vivo** (`src/sala.js`) é opcional e honesta sobre o que é: um broker MQTT público (broker.emqx.io), sem conta e **sem senha** — quem souber o código lê o que passa. Por isso só trafega o resumo de UM investigador escolhido pelo jogador (identidade, Vida, Sanidade, Raiz, níveis, PP) e as últimas 8 rolagens dele. Diário e anotações nunca saem do navegador; o escudo só escuta e nunca publica. Não descrever isso como login ou proteção. Para autenticação real, propor um backend com consentimento do usuário.
 - Priorizar segurança ao importar JSON e exibir textos do usuário (não inserir HTML sem escape), manter backups por exportação.
 
 ## Regra de jogo vigente (HOME BREW)
@@ -36,10 +36,12 @@ Você está trabalhando no projeto **A TERRA SOB AS UNHAS**, um site estático e
 
 - `src/jogadores.html` usa `/*CSS_INLINE*/` e `/*JS_INLINE*/` como placeholders.
 - `src/style.css` e `src/jogadores.js` possuem o estilo e a lógica da página dos jogadores. O `style.css` é compartilhado com o escudo.
-- `build.py` gera `site/index.html` autocontido. Se os arquivos do escudo estiverem na pasta (só no computador do Mestre), gera também `site/escudo_mestre.html`, que o `.gitignore` mantém fora do repositório.
+- `src/sala.js` é a sala ao vivo, compartilhada pela página dos jogadores e pelo escudo. Valida tudo que chega da rede (`limparFicha`, `limparRolagens`) e confere o código da sala em cada mensagem. A biblioteca MQTT (`site/vendor/mqtt.min.js`, MIT) só é baixada quando alguém entra numa sala, com verificação de integridade (SRI); se trocar o arquivo, recalcule o hash `LIB_SRI`.
+- Quem entra pela sala por link não compartilha nada até tocar no próprio investigador (senão a ficha selecionada por padrão iria para a mesa).
+- `build.py` junta `sala.js` + o JS da página e gera `site/index.html` autocontido. Se os arquivos do escudo estiverem na pasta (só no computador do Mestre), gera também `site/escudo_mestre.html`, que o `.gitignore` mantém fora do repositório.
 - `index.html` na raiz só redireciona para `site/`, porque o GitHub Pages serve a raiz da branch `gh-pages`.
 - Depois de editar `src/`, rode `python build.py` e commite o `site/index.html` gerado junto.
-- Antes de entregar melhorias, testar PP, dados, save/load local, exportação/importação JSON, responsividade e confidencialidade (nada do escudo na página dos jogadores).
+- Antes de entregar melhorias, testar PP, dados (aba e rolagem rápida), save/load local, exportação/importação JSON, sala ao vivo (dois jogadores + escudo), responsividade (botões de toque com 44px) e confidencialidade (nada do escudo na página dos jogadores nem na sala).
 
 ## Ao receber novas tarefas
 

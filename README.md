@@ -12,12 +12,25 @@ no navegador, no computador ou no celular, sem conta e sem instalar nada.
   Psicologia, Visão e Investigação. Subir do nível *n* para *n+1* custa *n+1* PP.
 - Para testar, role **2D6 + nível da habilidade + modificador do Mestre** contra 9 (normal),
   12 (difícil) ou 15 (extremo). 6+6 é sucesso crítico; 1+1 é falha crítica.
-- Vida, Sanidade e Raiz mudam só quando o Mestre mandar.
+- O dado ⚄ ao lado de cada habilidade abre a rolagem: escolha a dificuldade que o Mestre
+  pediu e a circunstância, e role.
+- Vida, Sanidade e Raiz mudam só quando o Mestre mandar (o máximo de Vida e Sanidade também
+  pode ser ajustado).
 - O diário guarda pistas, equipamentos e anotações.
 
-**A ficha fica salva só no navegador que você usou.** Para levar a outro aparelho ou mandar ao
-Mestre, use **Exportar ficha** e depois **Importar ficha** do outro lado. Nada é sincronizado
-automaticamente.
+## Mesa (sala ao vivo)
+
+1. O Mestre cria a sala no escudo e passa o link (ou o código).
+2. Você abre o link, ou digita o código na aba **Mesa**, e toca no seu investigador.
+3. A mesa passa a ver seu nome, Vida, Sanidade, Raiz, níveis e suas últimas rolagens, e você
+   vê os dos outros. **O diário e as anotações nunca saem do seu navegador.**
+
+A sala é opcional. Não há senha: quem souber o código vê esses dados. As mensagens passam por
+um servidor público e gratuito (broker.emqx.io); rolagens com mais de 6 horas somem da mesa.
+**Sair da sala** retira sua ficha da mesa.
+
+**A ficha fica salva só no navegador que você usou.** Para levar a outro aparelho, use
+**Exportar ficha** e depois **Importar ficha** do outro lado. Fora da sala, nada é enviado.
 
 ## Para quem mantém o site
 
@@ -25,10 +38,12 @@ Site estático, sem dependências: HTML, CSS e JavaScript puros.
 
 ```
 src/jogadores.html   modelo da página (com /*CSS_INLINE*/ e /*JS_INLINE*/)
-src/jogadores.js     fichas, PP, rolagens, diário, exportar/importar
+src/jogadores.js     fichas, PP, rolagens, diário, exportar/importar, aba Mesa
+src/sala.js          sala ao vivo (compartilhada com o escudo do Mestre)
 src/style.css        estilos (compartilhados com o escudo do Mestre)
 build.py             junta tudo em site/index.html
 site/index.html      página pronta, publicada pelo GitHub Pages
+site/vendor/         MQTT.js 5.16.0 (MIT), baixado só por quem entra numa sala
 index.html           redireciona a raiz do site para site/
 ```
 
