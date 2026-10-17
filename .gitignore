@@ -1,3 +1,16 @@
-node_modules/
-.vite/
-dist/
+# Escudo do Mestre: contém segredos da campanha. Fica só no computador do
+# Mestre e nunca entra neste repositório, que é público.
+src/escudo_mestre.html
+src/mestre.js
+site/escudo_mestre.html
+escudo_mestre*
+*Backup_Mestre*.json
+preview/escudo_mestre.png
+
+# Arquivos de entrega que repetem o código do escudo ou o roteiro da campanha
+CODIGO_COMPLETO_PARA_CLAUDE.txt
+README_PARA_CLAUDE.md
+PROMPT_PARA_CLAUDE.txt
+CLAUDE_MESTRE.md
+
+__pycache__/
