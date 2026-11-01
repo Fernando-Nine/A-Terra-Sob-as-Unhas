@@ -454,3 +454,11 @@ html[data-motion=on] .skill-node .skill-gem { transition: box-shadow .2s,border-
 .skill-node-center .skill-node-label { color: #d1dbd0; }
 .skill-node-center.selected .skill-gem { background: #61447b; border-color: #dcb8f2; }
 @media(max-width:700px) { .skill-gem { width: 36px; height: 36px; }.skill-gem svg { width: 26px; height: 26px; }.skill-gem:before { inset: -3px; } }
+
+/* Créditos do projeto */
+.footer, .auth-entry-foot { flex-wrap: wrap; }
+.site-credit { display: flex; flex: 1 0 100%; justify-content: space-between; gap: 12px; padding-top: 18px; border-top: 1px solid #8b9b5926; font-size: 11px; line-height: 1.8; letter-spacing: 0; color: #a3af9a; }
+.site-credit strong { color: #d0d7c3; font-weight: 650; }
+.auth-entry-foot .site-credit { border-color: #939b7733; color: #64705d; font-size: 10px; padding-top: 14px; }
+.auth-entry-foot .site-credit strong { color: #374a34; }
+@media(max-width:450px) { .site-credit { flex-wrap: wrap; gap: 5px 12px; } }
