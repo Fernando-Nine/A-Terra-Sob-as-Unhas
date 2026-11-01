@@ -360,3 +360,5 @@ html[data-motion=off] button, html[data-motion=off] .pick, html[data-motion=off]
   *, *:before, *:after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 @media print { .motion-toggle, .fx-ripple { display: none !important; } }
+
+.maintenance .motion-toggle { width: auto; }.maintenance .motion-label { display: inline; }.preference-controls { padding-top: 10px; }

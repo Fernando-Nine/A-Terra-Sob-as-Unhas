@@ -10,7 +10,7 @@ no navegador, no computador ou no celular, com acesso por e-mail e senha e sem i
 - Entre na sua conta (ou use **Criar conta** no primeiro acesso).
 - A página **Início** apresenta o sistema. Use as categorias no topo para abrir
   **Fichas**, **Dados**, **Mesa**, **Diário** ou **Como jogar**.
-- Use **Animações** no topo para ativar ou pausar os efeitos. A preferência de
+- Use **Fichas → Preferências e backups → Animações** para ativar ou pausar os efeitos. A preferência de
   movimento reduzido do aparelho é respeitada.
 - A seção Fichas começa vazia: crie seu investigador ou importe um arquivo.
 - Distribua seus **10 PP** entre as sete habilidades: Eloquência, Força, Medicina, Ocultismo,
