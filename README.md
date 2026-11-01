@@ -62,7 +62,8 @@ uma sessão válida no Supabase; sem configuração ou conexão, a tela de entra
 src/jogadores.html   modelo da página (com /*CSS_INLINE*/ e /*JS_INLINE*/)
 src/jogadores.js     fichas, PP, rolagens, diário, exportar/importar, aba Mesa
 src/sala.js          sala ao vivo (compartilhada com o escudo do Mestre)
-src/style.css        estilos (compartilhados com o escudo do Mestre)
+src/style.css        estilos base (compartilhados com o escudo do Mestre)
+src/interface.css    identidade visual do portal, telas e componentes dos jogadores
 build.py             junta tudo em site/index.html
 site/index.html      página pronta, publicada pelo GitHub Pages
 site/vendor/         MQTT.js 5.16.0 (MIT), baixado só por quem entra numa sala

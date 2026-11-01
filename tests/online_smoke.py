@@ -116,6 +116,14 @@ def login(page, signup=False, email='a@example.com'):
         page.fill('#askInput','Investigador de teste')
         page.click('#askOk')
         page.wait_for_selector('#charName')
+    for section in ['ficha','dados','diario','regras']:
+        page.locator(f'.app-nav [data-tab={section}]').click()
+        for width in [1440,390,360]:
+            page.set_viewport_size({'width':width,'height':1000})
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (section,width)
+            if width!=360:page.screenshot(path=f'/tmp/atsu-polish-{section}-{width}.png',full_page=True)
+    page.locator('.app-nav [data-tab=ficha]').click()
+    page.set_viewport_size({'width':1280,'height':900})
     assert page.locator('#onlinePassword').input_value() == ''
     assert 'test-password-123' not in page.evaluate('JSON.stringify(sessionStorage)')
 

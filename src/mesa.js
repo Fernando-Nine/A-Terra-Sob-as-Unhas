@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),u
 const message=(s,bad=false)=>{$('mesaStatus').textContent=s;$('mesaStatus').className=bad?'note mesa-error':'hint'};
 const master=()=>sala&&sala.mestre_id===app?.user.id;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
-const button=(text,fn)=>{const b=el('button',text);b.type='button';b.onclick=()=>run(fn);return b};
+const button=(text,fn)=>{const b=el('button',text,text==='Remover'?'danger':text==='Visualizar'?'primary':'');b.type='button';b.onclick=()=>run(fn);return b};
 async function run(fn){try{await fn()}catch(e){message(e.message,true)}}
 function roomKey(){return 'atsu.mesa.v2.'+app.user.id}
 function privateKey(){return 'atsu.mesa.privada.'+app.user.id+'.'+sala.id}

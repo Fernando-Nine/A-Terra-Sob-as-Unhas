@@ -93,13 +93,13 @@ with sync_playwright() as pw:
  p.locator('.board-card',has_text='documento.pdf').locator('button',has_text='Remover').click();p.wait_for_selector('#askDialog[open]');p.click('#askOk');p.wait_for_timeout(500);assert len(files)==1
  # Limpeza de fichas exige backup antes da exclusão e deixa a conta vazia.
  sheets['40000000-0000-0000-0000-000000000001']={'id':'40000000-0000-0000-0000-000000000001','character':{'name':'Antiga','skills':{}},'revision':1}
- p.locator('.app-nav [data-tab=ficha]').click();p.click('#clearAllSheets');p.wait_for_selector('#askDialog[open]')
+ p.locator('.app-nav [data-tab=ficha]').click();p.locator('.maintenance summary').click();p.click('#clearAllSheets');p.wait_for_selector('#askDialog[open]')
  with p.expect_download() as backup:p.click('#askOk')
  backup_data=json.loads(Path(backup.value.path()).read_text());assert backup_data['format']=='ATSU-backup-1' and len(backup_data['online'])==1
  p.wait_for_function("document.getElementById('onlineStatus').textContent.includes('removidas')");assert not sheets and p.locator('#picker button').count()==0;assert p.locator('#rollBtn').is_disabled();p.wait_for_timeout(500);assert members[USERS['player@example.com']]['ficha'] is None
  p.locator('#importFile').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':json.dumps(backup_data).encode()});p.wait_for_selector('#charName');assert p.locator('#picker button').count()>=1
- m.locator('[data-room-view=painel]').click();m.set_viewport_size({'width':390,'height':844});assert m.evaluate('document.documentElement.scrollWidth<=innerWidth');m.screenshot(path='/tmp/atsu-room-mobile.png',full_page=True)
- p.locator('.app-nav [data-tab=mesa]').click();p.locator('[data-room-view=documentos]').click();p.set_viewport_size({'width':390,'height':844});assert p.evaluate('document.documentElement.scrollWidth<=innerWidth');p.screenshot(path='/tmp/atsu-board-mobile.png',full_page=True)
+ m.locator('[data-room-view=painel]').click();m.set_viewport_size({'width':390,'height':844});assert m.evaluate('document.documentElement.scrollWidth<=innerWidth');m.evaluate('window.scrollTo(0,0)');m.screenshot(path='/tmp/atsu-room-mobile.png',full_page=True)
+ p.locator('.app-nav [data-tab=mesa]').click();p.locator('[data-room-view=documentos]').click();p.set_viewport_size({'width':390,'height':844});assert p.evaluate('document.documentElement.scrollWidth<=innerWidth');p.evaluate('window.scrollTo(0,0)');p.screenshot(path='/tmp/atsu-board-mobile.png',full_page=True)
  assert not errors,errors
  browser.close()
 print('PASS: criar/entrar, fichas e dados públicos, dados privados sem publicação, notas compartilhadas, teclado/arraste, upload/download, prévias imagem/PDF, HTTP 201 vazio sem apagar uploads, restauração de arquivo perdido, persistência ao sair, falha e repetição de leitura, limpeza com backup/restauração, mobile')

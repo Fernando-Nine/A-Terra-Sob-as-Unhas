@@ -19,6 +19,7 @@ for template,scripts,filename,opcional in [('jogadores.html',['online-config.js'
     html=(source/template).read_text(encoding='utf-8')
     assert '/*CSS_INLINE*/' in html and '/*JS_INLINE*/' in html, f'Placeholders ausentes: {template}'
     js='\n'.join((source/s).read_text(encoding='utf-8') for s in scripts)
-    html=html.replace('/*CSS_INLINE*/',css).replace('/*JS_INLINE*/',js)
+    page_css=css if opcional else css+'\n'+(source/'interface.css').read_text(encoding='utf-8')
+    html=html.replace('/*CSS_INLINE*/',page_css).replace('/*JS_INLINE*/',js)
     (out/filename).write_text(html,encoding='utf-8')
     print(f'Gerado: {out/filename}')
