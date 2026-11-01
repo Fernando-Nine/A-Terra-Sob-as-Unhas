@@ -24,7 +24,7 @@ window.ATSUOnline = (() => {
    if(version!==generation)return;
    if(!user?.id||user.id!==session?.user?.id)throw Error('Entre novamente para acessar sua conta.');
    const alreadyOpen=!$('appScreen').hidden;session.user=user;remember();
-   if(!alreadyOpen){unlock();status('Conta conectada. Abra uma ficha online ou envie a ficha atual.');run(list)}
+   if(!alreadyOpen){unlock();status('Conta conectada. Suas fichas estão na seção Fichas.');run(list)}
    else{clearTimeout(renewal);renewal=setTimeout(restore,Math.max(1000,session.expires_at*1000-Date.now()-45000))}
   }catch(e){if(version===generation)lock('Não foi possível validar sua sessão. Entre novamente.');}
  }
@@ -126,7 +126,7 @@ window.ATSUOnline = (() => {
      if(!s.access_token||!s.refresh_token||!s.user?.id){
       status('O cadastro não iniciou uma sessão. O responsável precisa desativar Confirm email no Supabase. Não há envio de código neste site.');return;
      }
-     generation++;bound=null;session={...s,expires_at:Date.now()/1000+s.expires_in};remember();$('onlinePassword').value='';$('authConfirmPassword').value='';unlock();status('Login concluído. Escolha uma ficha online ou envie a ficha atual.');await list();
+     generation++;bound=null;session={...s,expires_at:Date.now()/1000+s.expires_in};remember();$('onlinePassword').value='';$('authConfirmPassword').value='';unlock();status('Você está conectado. Acesse Fichas para abrir seu investigador.');await list();
     }finally{buttons.forEach(b=>b.disabled=false)}
    });
   };

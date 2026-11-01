@@ -19,7 +19,7 @@ function renderRollSkills(){const sel=$('#rollSkill'), old=sel.value;const c=cha
 function renderJournal(){const c=char();['clues','inventory','privateNotes'].forEach(k=>{$('#'+k).value=c?.[k]||''})}
 function renderHistory(){const c=char();$('#rollHistory').innerHTML=c?.history?.length?c.history.slice(0,20).map(r=>`<div class="hist ${r.ok?'':'bad'}"><span><b>${esc(r.skill)}</b> · ${esc(r.date)}</span><span>${rollLine(r)}</span></div>`).join(''):'<p class="small">Nenhuma rolagem registrada para este investigador.</p>'}
 function renderAll(){renderPicker();renderSheet();renderJournal();renderHistory();renderMesa();persist()}
-function tab(name){document.querySelectorAll('.tabview').forEach(el=>el.hidden=el.id!=='view-'+name);document.querySelectorAll('[data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===name))}
+function tab(name){if(!document.getElementById('view-'+name))return;document.querySelectorAll('.tabview').forEach(el=>el.hidden=el.id!=='view-'+name);document.querySelectorAll('[data-tab]').forEach(el=>{el.classList.toggle('active',el.dataset.tab===name);if(el.closest('.app-nav')){if(el.dataset.tab===name)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current')}});window.scrollTo({top:0,behavior:'instant'})}
 function randomSide(sides){if(window.crypto?.getRandomValues){const n=new Uint32Array(1);const ceiling=Math.floor(4294967296/sides)*sides;do{crypto.getRandomValues(n)}while(n[0]>=ceiling);return (n[0]%sides)+1}return Math.floor(Math.random()*sides)+1}function randomDie(){return randomSide(6)}
 // Um teste de habilidade: 2D6 + nível + circunstância contra o alvo. Usado pela aba de
 // dados e pelo dado ao lado de cada habilidade; vai para o histórico e, se houver, para a mesa.
@@ -98,13 +98,13 @@ window.addEventListener('DOMContentLoaded',()=>{
  $('#roomTag').addEventListener('click',()=>tab('mesa'));
  ATSUOnline.start({
   current:char,confirm:(title,text)=>ask({title,text}),
-  open:raw=>{const c=normalizeImported({format:'ATSU-personagem-1',character:raw});state.characters[c.id]=c;state.selected=c.id;renderAll();return c},
+  open:raw=>{const c=normalizeImported({format:'ATSU-personagem-1',character:raw});state.characters[c.id]=c;state.selected=c.id;renderAll();tab('ficha');return c},
   enter:user=>{
    STORE='atsu.jogadores.v1.'+user.id;ROOM_KEY='atsu.sala.v1.'+user.id;SHARE_KEY='atsu.sala.ficha.v1.'+user.id;CID_KEY='atsu.cid.v1.'+user.id;
    try{state=JSON.parse(localStorage.getItem(STORE)||'null')||initial()}catch{state=initial()}
    if(!state.characters||!Object.keys(state.characters).length)state=initial();
    if(!state.characters[state.selected])state.selected=Object.keys(state.characters)[0];
-   renderAll();tab('ficha');
+   renderAll();tab('inicio');
    const urlCode=ATSUSala.limparCodigo(new URLSearchParams(location.search).get('sala'));let saved='',savedShare='';try{saved=ATSUSala.limparCodigo(localStorage.getItem(ROOM_KEY));savedShare=localStorage.getItem(SHARE_KEY)||''}catch{}
    const start=urlCode||saved;if(start){roomJoin(start,start===saved?savedShare:'');if(!room.shareId)toast(`Você entrou na sala ${start}. Toque no seu investigador para entrar na mesa.`)}
   },

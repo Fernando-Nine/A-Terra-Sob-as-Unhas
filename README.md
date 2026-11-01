@@ -8,6 +8,8 @@ no navegador, no computador ou no celular, com acesso por e-mail e senha e sem i
 ## Para quem joga
 
 - Entre na sua conta (ou use **Criar conta** no primeiro acesso).
+- A página **Início** apresenta o sistema. Use as categorias no topo para abrir
+  **Fichas**, **Dados**, **Mesa**, **Diário** ou **Como jogar**.
 - Escolha seu investigador (Bispo, Wiiz, Goudl ou Nine) ou crie um novo.
 - Distribua seus **10 PP** entre as sete habilidades: Eloquência, Força, Medicina, Ocultismo,
   Psicologia, Visão e Investigação. Subir do nível *n* para *n+1* custa *n+1* PP.

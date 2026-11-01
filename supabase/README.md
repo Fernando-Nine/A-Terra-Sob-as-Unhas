@@ -62,7 +62,10 @@ cadastro que ainda exige confirmação, além do fluxo de fichas.
 
 ## Tela de entrada e dados locais
 
-A página das fichas começa oculta, inclusive antes de executar JavaScript. O
+A página inicial e as fichas começam ocultas, inclusive antes de executar JavaScript.
+Depois do login, a seção Início apresenta o sistema. As categorias do menu
+superior alternam entre Início, Fichas, Dados, Mesa, Diário e Como jogar.
+Os controles de salvamento online ficam em Fichas. O
 login e o cadastro usam a API do Supabase; ao recarregar, a sessão armazenada é
 validada em `/auth/v1/user`, com renovação do token quando necessário. Sessões
 inválidas não abrem a página inicial. Sair da conta volta à entrada e desconecta

@@ -88,7 +88,23 @@ def login(page, signup=False, email='a@example.com'):
     if signup:
         page.fill('#authConfirmPassword', 'test-password-123')
     page.click('#authSubmit')
+    page.wait_for_selector('#view-inicio:not([hidden])')
+    assert page.locator('#view-ficha').is_hidden()
+    assert page.locator('#homeTitle').inner_text() == 'O desconhecido\ndeixa marcas.'
+    page.set_viewport_size({'width':1440,'height':1000})
+    page.screenshot(path='/tmp/atsu-home-desktop.png',full_page=True)
+    for width in [390,360]:
+        page.set_viewport_size({'width':width,'height':844})
+        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    page.screenshot(path='/tmp/atsu-home-mobile.png',full_page=True)
+    for section in ['ficha','dados','mesa','diario','regras','inicio']:
+        page.locator(f'.app-nav [data-tab={section}]').click()
+        assert page.locator(f'#view-{section}').is_visible()
+        assert page.locator('.tabview:visible').count()==1
+        assert page.locator(f'.app-nav [data-tab={section}]').get_attribute('aria-current')=='page'
+    page.locator('#view-inicio .home-actions [data-tab=ficha]').click()
     page.wait_for_selector('#onlineUpload')
+    page.set_viewport_size({'width':1280,'height':900})
     assert page.locator('#onlinePassword').input_value() == ''
     assert 'test-password-123' not in page.evaluate('JSON.stringify(sessionStorage)')
 
@@ -149,6 +165,14 @@ with sync_playwright() as playwright:
     a.wait_for_timeout(1000)
     saved = next(iter(rows.values()))
     assert saved['character']['skills']['eloquencia'] == 1
+    a.locator('.app-nav [data-tab=diario]').click()
+    a.fill('#clues', 'Pista de teste preservada entre categorias')
+    a.locator('.app-nav [data-tab=ficha]').click()
+    a.locator('.app-nav [data-tab=diario]').click()
+    assert a.locator('#clues').input_value()=='Pista de teste preservada entre categorias'
+    a.locator('.app-nav [data-tab=ficha]').click()
+    a.wait_for_timeout(1000)
+    assert saved['character']['clues']=='Pista de teste preservada entre categorias'
 
     second, b, errors_b = open_page(browser)
     login(b)
@@ -220,4 +244,4 @@ with sync_playwright() as playwright:
     a.screenshot(path='/tmp/atsu-auth-desktop.png', full_page=True)
     assert not errors_a + errors_b, errors_a + errors_b
     browser.close()
-print('PASS: login gate, session validation/refresh, account isolation, password signup/login, invalid password, confirmation required, upload, second browser load, autosave, conflicts, network retry, logout, mobile')
+print('PASS: home, top navigation, category data preservation, login gate, session validation/refresh, account isolation, password signup/login, invalid password, confirmation required, upload, second browser load, autosave, conflicts, network retry, logout, mobile')
