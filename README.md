@@ -31,6 +31,8 @@ no navegador, no computador ou no celular, com acesso por e-mail e senha e sem i
    apenas no navegador dele e nunca são enviados à sala ou ao banco.
 5. Em **Documentos e mural**, os participantes criam notas e enviam imagens ou
    PDFs de até 10 MB. Cartões podem ser arrastados ou movidos com as setas.
+   Use **Visualizar** para ampliar imagens ou abrir PDFs; se o navegador não
+   exibir PDFs, use **Baixar arquivo**.
 
 As salas e os documentos usam Supabase e exigem executar
 [`supabase/rooms.sql`](supabase/rooms.sql) uma vez no SQL Editor. O convite permite

@@ -7,6 +7,7 @@ ROOT=Path(__file__).resolve().parents[1]
 HTML=re.sub(r'window\.ATSU_ONLINE = .*?;', "window.ATSU_ONLINE = {url:'https://example.supabase.co',key:'public-test'};", (ROOT/'site/index.html').read_text(),count=1,flags=re.S)
 ROOM='10000000-0000-0000-0000-000000000001'
 USERS={'master@example.com':'00000000-0000-0000-0000-000000000001','player@example.com':'00000000-0000-0000-0000-000000000002'}
+deny_images=False
 room=None;members={};cards={};rolls=[];sheets={};files={};sent=[]
 def api(route):
  global room
@@ -42,6 +43,8 @@ def api(route):
    if card['revisao']!=int(q['revisao'][0][3:]):route.fulfill(json=[])
    else:card.update(body);route.fulfill(json=[copy.deepcopy(card)])
  elif '/storage/v1/object/' in path:
+  if '/object/authenticated/' in path:route.fulfill(status=404,json={'message':'Unsupported route in test contract'});return
+  if r.method=='GET' and path.endswith('.png') and deny_images:route.fulfill(status=400,json={'statusCode':'403','error':'AccessDenied','message':'Acesso negado ao arquivo'});return
   if r.method=='POST':files[path.split('mesa-documentos/')[1]]=r.post_data_buffer;route.fulfill(json={'Key':path})
   elif r.method=='DELETE':
    for key in body['prefixes']:files.pop(key,None)
@@ -69,8 +72,13 @@ with sync_playwright() as pw:
  p.locator('#boardFile').set_input_files({'name':'documento.pdf','mimeType':'application/pdf','buffer':b'%PDF-1.4\nmock document'});p.wait_for_function("document.querySelectorAll('.board-card').length===2");assert len(files)==1
  with p.expect_download() as download:p.locator('.board-card button',has_text='Baixar arquivo').click()
  assert download.value.suggested_filename
+ deny_images=True
  png=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC')
- p.locator('#boardFile').set_input_files({'name':'imagem.png','mimeType':'image/png','buffer':png});p.wait_for_function("document.querySelector('.board-card img')?.naturalWidth===1");assert len(files)==2
+ p.locator('#boardFile').set_input_files({'name':'imagem.png','mimeType':'image/png','buffer':png});p.wait_for_function("document.getElementById('boardCanvas').textContent.includes('Acesso negado ao arquivo')");assert len(files)==2
+ deny_images=False
+ p.locator('.board-card',has_text='imagem.png').get_by_role('button',name='Tentar carregar novamente').click();p.wait_for_function("document.querySelector('.board-card img')?.naturalWidth===1")
+ p.locator('.board-card',has_text='imagem.png').get_by_role('button',name='Visualizar',exact=True).click();p.wait_for_function("document.querySelector('#documentContent img')?.naturalWidth===1");p.click('#documentClose')
+ p.locator('.board-card',has_text='documento.pdf').get_by_role('button',name='Visualizar',exact=True).click();p.wait_for_selector('#documentContent object');assert p.locator('#documentContent object').get_attribute('data').startswith('blob:');p.click('#documentClose')
  assert p.locator('.board-card',has_text='Título editado').locator('button',has_text='Remover').count()==0
  p.locator('.board-card',has_text='documento.pdf').locator('button',has_text='Remover').click();p.wait_for_selector('#askDialog[open]');p.click('#askOk');p.wait_for_timeout(500);assert len(files)==1
  # Limpeza de fichas exige backup antes da exclusão e deixa a conta vazia.
@@ -84,4 +92,4 @@ with sync_playwright() as pw:
  p.locator('.app-nav [data-tab=mesa]').click();p.locator('[data-room-view=documentos]').click();p.set_viewport_size({'width':390,'height':844});assert p.evaluate('document.documentElement.scrollWidth<=innerWidth');p.screenshot(path='/tmp/atsu-board-mobile.png',full_page=True)
  assert not errors,errors
  browser.close()
-print('PASS: criar/entrar, fichas e dados públicos, dados privados sem publicação, notas compartilhadas, teclado/arraste, upload/download PDF, limpeza com backup/restauração, mobile')
+print('PASS: criar/entrar, fichas e dados públicos, dados privados sem publicação, notas compartilhadas, teclado/arraste, upload/download, prévias imagem/PDF, falha e repetição de leitura, limpeza com backup/restauração, mobile')

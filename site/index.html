@@ -175,6 +175,8 @@ dialog.dlg::backdrop{background:#050a08cc}
 @media(max-width:660px){.mesa-room-heading{align-items:flex-start;flex-direction:column}.mesa-tabs button{font-size:13px}.board-scroll{max-height:65vh}}
 
 .board-card:focus-within{z-index:3!important}.board-card button{scroll-margin-top:180px}
+
+.document-viewer{width:min(1100px,calc(100vw - 24px))!important}.document-viewer .dlg-body{padding:20px}.document-viewer h2{overflow-wrap:anywhere;max-width:80%}#documentContent img{display:block;max-width:100%;max-height:70vh;object-fit:contain;margin:0 auto 15px}#documentContent object{display:block;width:100%;height:68vh;background:#f5f3eb;margin-bottom:15px}.board-card .board-body button{display:block;margin-top:10px;font-size:11px;background:#445c38;color:white}#documentStatus{overflow-wrap:anywhere}
 </style></head>
 <body>
 <section id="authScreen" class="auth-page" aria-label="Acesso dos investigadores">
@@ -240,7 +242,7 @@ dialog.dlg::backdrop{background:#050a08cc}
 </div></section>
 <section class="tabview" id="view-diario" hidden><div class="panel"><div class="kicker">Seu arquivo particular</div><h2>Diário do investigador</h2><p class="small">Anote apenas o que seu personagem descobriu. O conteúdo é salvo automaticamente e entra no arquivo de exportação.</p><div class="grid cols2"><div><label class="label" for="clues">Pistas e hipóteses</label><textarea rows="10" id="clues" placeholder="O que sabemos sobre Eduardo, o Rio Negro, a empresa..."></textarea></div><div><label class="label" for="inventory">Equipamentos e documentos</label><textarea rows="10" id="inventory" placeholder="Objetos, papéis recebidos, ferramentas, condições..."></textarea></div></div><div class="space"></div><label class="label" for="privateNotes">Lembranças, sonhos e suspeitas</label><textarea rows="7" id="privateNotes" placeholder="Algo que só seu investigador percebeu..."></textarea></div></section>
 <section class="tabview" id="view-regras" hidden><div class="panel"><div class="kicker">Manual rápido do sistema adaptado</div><h2>Como jogar A Terra Sob as Unhas</h2><div class="grid cols2"><div><h3>1. Crie e evolua</h3><p>Você recebe <b>10 PP iniciais</b> e distribui livremente em sete áreas. Todas começam no nível 0 e podem chegar ao nível 5.</p><p>Comprar cada novo nível custa seu número: do nível 0 ao 1, 1 PP; do 1 ao 2, 2 PP; e assim por diante. Uma habilidade no nível 5 custa 15 PP no total.</p><h3>2. Role os dados</h3><p>Quando houver risco ou incerteza, role <b>2D6 + nível da habilidade + modificador</b>. O alvo é 9 (normal), 12 (difícil) ou 15 (extremo).</p><p><b>1+1:</b> falha crítica. <b>6+6:</b> sucesso crítico. O Mestre interpreta as consequências.</p></div><div><h3>3. Cuide do personagem</h3><p>Valores sugeridos para o sistema caseiro: <b>6 Vida, 10 Sanidade e 1 Raiz inicial</b>. O Mestre define quando esses recursos mudam. A Raiz é um marcador sobrenatural, não uma habilidade comprável.</p><h3>4. O que as habilidades fazem?</h3><div id="ruleSkills"></div><div class="note" style="margin-top:16px">Este sistema é uma adaptação caseira para a campanha. Substitui as perícias percentuais do D100, mas não altera a história nem garante que uma pista sobrenatural seja compreendida.</div></div></div></div></section>
-<div class="footer">A TERRA SOB AS UNHAS · Fichas dos investigadores · Acesso dos investigadores · Salvamento local e online opcional; a mesa só recebe o resumo da ficha quando você entra numa sala.</div></main></div><dialog class="dlg" id="askDialog"><form method="dialog" class="dlg-body"><h2 id="askTitle"></h2><p class="small" id="askText"></p><input id="askInput" maxlength="60" autocomplete="off" hidden aria-labelledby="askTitle"><div class="actions dlg-actions"><button value="cancel" id="askCancel">Cancelar</button><button value="ok" class="primary" id="askOk">OK</button></div></form></dialog><dialog class="dlg" id="rollDialog" aria-labelledby="qrTitle"><form method="dialog" class="dlg-body"><div class="row between" style="align-items:flex-start"><div><div class="kicker">Teste de habilidade</div><h2 id="qrTitle"></h2><div class="small" id="qrLevel"></div></div><button value="close" class="iconbtn ghost" aria-label="Fechar">✕</button></div><div><div class="label" id="qrDiffLabel">Dificuldade pedida pelo Mestre</div><div class="seg" id="qrDiff" role="group" aria-labelledby="qrDiffLabel"><button type="button" data-diff="9" aria-pressed="true">Normal · 9</button><button type="button" data-diff="12" aria-pressed="false">Difícil · 12</button><button type="button" data-diff="15" aria-pressed="false">Extrema · 15</button></div></div><div><label class="label" for="qrMod">Circunstância (com aprovação do Mestre)</label><select id="qrMod"></select></div><div class="row" style="justify-content:center;gap:16px;margin:4px 0"><div class="dice sm" id="qrDie1">?</div><div class="dice sm" id="qrDie2">?</div></div><div id="qrResult" class="result" aria-live="polite" style="text-align:center">Escolha a dificuldade e role.</div><button type="button" class="primary" id="qrRoll" style="width:100%;padding:15px">⚄ ROLAR 2D6</button></form></dialog><div class="toast" id="toast" role="status"></div></div><script>// Configuração pública do projeto Supabase. Nunca use service_role/secret aqui.
+<div class="footer">A TERRA SOB AS UNHAS · Fichas dos investigadores · Acesso dos investigadores · Salvamento local e online opcional; a mesa só recebe o resumo da ficha quando você entra numa sala.</div></main></div><dialog class="dlg document-viewer" id="documentDialog" aria-labelledby="documentTitle"><div class="dlg-body"><div class="row between"><h2 id="documentTitle"></h2><button type="button" id="documentClose" aria-label="Fechar documento">Fechar</button></div><p id="documentStatus" role="status" aria-live="polite"></p><div id="documentContent"></div></div></dialog><dialog class="dlg" id="askDialog"><form method="dialog" class="dlg-body"><h2 id="askTitle"></h2><p class="small" id="askText"></p><input id="askInput" maxlength="60" autocomplete="off" hidden aria-labelledby="askTitle"><div class="actions dlg-actions"><button value="cancel" id="askCancel">Cancelar</button><button value="ok" class="primary" id="askOk">OK</button></div></form></dialog><dialog class="dlg" id="rollDialog" aria-labelledby="qrTitle"><form method="dialog" class="dlg-body"><div class="row between" style="align-items:flex-start"><div><div class="kicker">Teste de habilidade</div><h2 id="qrTitle"></h2><div class="small" id="qrLevel"></div></div><button value="close" class="iconbtn ghost" aria-label="Fechar">✕</button></div><div><div class="label" id="qrDiffLabel">Dificuldade pedida pelo Mestre</div><div class="seg" id="qrDiff" role="group" aria-labelledby="qrDiffLabel"><button type="button" data-diff="9" aria-pressed="true">Normal · 9</button><button type="button" data-diff="12" aria-pressed="false">Difícil · 12</button><button type="button" data-diff="15" aria-pressed="false">Extrema · 15</button></div></div><div><label class="label" for="qrMod">Circunstância (com aprovação do Mestre)</label><select id="qrMod"></select></div><div class="row" style="justify-content:center;gap:16px;margin:4px 0"><div class="dice sm" id="qrDie1">?</div><div class="dice sm" id="qrDie2">?</div></div><div id="qrResult" class="result" aria-live="polite" style="text-align:center">Escolha a dificuldade e role.</div><button type="button" class="primary" id="qrRoll" style="width:100%;padding:15px">⚄ ROLAR 2D6</button></form></dialog><div class="toast" id="toast" role="status"></div></div><script>// Configuração pública do projeto Supabase. Nunca use service_role/secret aqui.
 window.ATSU_ONLINE = {
  url: 'https://kzzorsenaosfcydvicgw.supabase.co',
  key: 'sb_publishable_nNqDZ6oRRUvDZBnULAEHJA_qTg0eTC3'
@@ -480,7 +482,7 @@ return {SITE,MAX_ROLAGENS,TEXTO,novoCodigo,limparCodigo,meuCid,conectar,limparFi
 // Salas autenticadas: o banco aplica as permissões; dados privados nunca saem daqui.
 window.ATSUMesa=(()=>{'use strict';
 let app=null,sala=null,epoch=0,poll=null,shareTimer=null,shareId='',lastSheet='',syncing=false,dragging=false,docs=[],privateRolls=[];
-const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),uuid=s=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(s),assets=new Map();
+const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),uuid=s=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(s),assets=new Map(),loadingAssets=new Map();let previewURL='';
 const message=(s,bad=false)=>{$('mesaStatus').textContent=s;$('mesaStatus').className=bad?'note mesa-error':'hint'};
 const master=()=>sala&&sala.mestre_id===app?.user.id;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
@@ -489,7 +491,7 @@ async function run(fn){try{await fn()}catch(e){message(e.message,true)}}
 function roomKey(){return 'atsu.mesa.v2.'+app.user.id}
 function privateKey(){return 'atsu.mesa.privada.'+app.user.id+'.'+sala.id}
 function remember(){try{localStorage.setItem(roomKey(),sala.id)}catch{}}
-function revokeAssets(){assets.forEach(v=>URL.revokeObjectURL(v));assets.clear()}
+function revokeAssets(){loadingAssets.clear();if($('documentDialog').open)$('documentDialog').close();assets.forEach(v=>URL.revokeObjectURL(v));assets.clear()}
 function stop(){epoch++;clearInterval(poll);clearTimeout(shareTimer);poll=null;shareId='';lastSheet='';sala=null;privateRolls=[];app=null;syncing=false;revokeAssets();$('mesaInside').hidden=true;$('mesaLobby').hidden=false;$('privateHistory').replaceChildren();$('mesaMembers').replaceChildren();$('mesaRolls').replaceChildren();$('boardCanvas').replaceChildren();$('roomTag').hidden=true}
 function changed(){if(!sala||!shareId)return;if(!app.hasCharacter(shareId)){run(unshare);return}clearTimeout(shareTimer);shareTimer=setTimeout(()=>run(publish),450)}
 async function publish(){
@@ -546,8 +548,25 @@ function renderMembers(members){
 function renderRolls(rolls){const root=$('mesaRolls');root.replaceChildren();for(const r of rolls){const card=el('div',undefined,'hist');const critical=r.a===6&&r.b===6?'SUCESSO CRÍTICO':r.a===1&&r.b===1?'FALHA CRÍTICA':r.total>=r.alvo?'SUCESSO':'FALHA';card.append(el('span',r.nome+' · '+r.habilidade),el('span',`${r.a}+${r.b} + ${r.nivel} ${r.modificador>=0?'+':''}${r.modificador} = ${r.total} / ${r.alvo} · ${critical}`));root.append(card)}if(!rolls.length)root.append(el('p','As rolagens públicas dos jogadores aparecerão aqui.','small'))}
 function renderPrivate(){const root=$('privateHistory');root.replaceChildren();if(!master())return;for(const r of privateRolls)root.append(el('div',String(r),'hist'))}
 async function patch(card,values){const version=epoch;const result=await api('/rest/v1/sala_documentos?id=eq.'+card.id+'&revisao=eq.'+card.revisao,{...values,revisao:card.revisao+1},'PATCH',{Prefer:'return=representation'});if(version!==epoch)return;if(!result.length){await sync(true);throw Error('Este cartão foi alterado por outra pessoa. Atualize o mural e tente novamente.')}Object.assign(card,result[0]);await sync(!('x' in values||'y' in values))}
-async function blob(card){const path=card.caminho.split('/').map(encodeURIComponent).join('/');return api('/storage/v1/object/authenticated/mesa-documentos/'+path,undefined,'GET',{},'blob')}
-async function openFile(card){const data=await blob(card),url=URL.createObjectURL(data),a=el('a');a.href=url;a.download=card.titulo+(card.tipo==='arquivo'?'.pdf':'');a.click();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+async function blob(card){const path=card.caminho.split('/').map(encodeURIComponent).join('/');return api('/storage/v1/object/mesa-documentos/'+path,undefined,'GET',{},'blob')}
+async function imageURL(card){
+ if(assets.has(card.id))return assets.get(card.id);
+ if(loadingAssets.has(card.id))return loadingAssets.get(card.id);
+ const version=epoch;
+ const pending=blob(card).then(data=>{if(version!==epoch)throw Error('A sala foi alterada.');if(!['image/png','image/jpeg','image/webp'].includes(data.type.split(';')[0].toLowerCase()))throw Error('O servidor não retornou uma imagem PNG, JPEG ou WebP.');const url=URL.createObjectURL(data);assets.set(card.id,url);return url}).finally(()=>{if(loadingAssets.get(card.id)===pending)loadingAssets.delete(card.id)});
+ loadingAssets.set(card.id,pending);return pending;
+}
+async function openFile(card){const data=await blob(card),url=URL.createObjectURL(data),a=el('a');a.href=url;a.download=card.titulo+(card.tipo==='arquivo'&&!card.titulo.toLowerCase().endsWith('.pdf')?'.pdf':'');document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+async function preview(card){
+ const dialog=$('documentDialog'),root=$('documentContent'),version=epoch;
+ root.replaceChildren();$('documentTitle').textContent=card.titulo;$('documentStatus').textContent='Carregando documento…';dialog.showModal();
+ try{
+  if(card.tipo==='imagem'){const url=await imageURL(card);if(version!==epoch||!dialog.open)return;const img=el('img');img.alt=card.titulo;img.src=url;root.append(img)}
+  else{const data=await blob(card);if(version!==epoch||!dialog.open)return;if(data.type.split(';')[0]!=='application/pdf')throw Error('O servidor não retornou um PDF.');previewURL=URL.createObjectURL(data);const object=el('object');object.type='application/pdf';object.data=previewURL;object.setAttribute('aria-label',card.titulo);object.append(el('p','Se seu navegador não exibir o PDF, use Baixar arquivo.'));root.append(object)}
+  $('documentStatus').textContent='';root.append(button('Baixar arquivo',()=>openFile(card)));
+ }catch(e){if(version===epoch&&dialog.open)$('documentStatus').textContent=e.message}
+}
+
 function renderBoard(){
  const root=$('boardCanvas');root.replaceChildren();const version=epoch;
  for(const [id,url] of assets)if(!docs.some(d=>d.id===id)){URL.revokeObjectURL(url);assets.delete(id)}
@@ -555,11 +574,13 @@ function renderBoard(){
   const node=el('article',undefined,'board-card');node.addEventListener('pointerdown',()=>{document.querySelectorAll('.board-card').forEach(n=>n.style.zIndex='');node.style.zIndex='2'});node.style.left=card.x+'px';node.style.top=card.y+'px';
   const handle=el('button',card.titulo,'board-handle');handle.type='button';handle.setAttribute('aria-label','Mover cartão: '+card.titulo);node.append(handle);
   if(card.tipo==='imagem'){
-   const img=el('img');img.alt=card.titulo;img.draggable=false;node.append(img);
-   if(assets.has(card.id))img.src=assets.get(card.id);else blob(card).then(data=>{if(version!==epoch||!['image/png','image/jpeg','image/webp'].includes(data.type))return;const url=URL.createObjectURL(data);if(assets.has(card.id))URL.revokeObjectURL(assets.get(card.id));assets.set(card.id,url);img.src=url}).catch(()=>{if(version===epoch)img.alt='Não foi possível carregar esta imagem.'});
+   const img=el('img');img.alt=card.titulo;img.draggable=false;img.hidden=true;const hint=el('p','Carregando imagem…','board-body');node.append(img,hint);
+   const load=async()=>{hint.textContent='Carregando imagem…';img.hidden=true;try{const url=await imageURL(card);if(version!==epoch)return;img.onload=()=>{hint.replaceChildren();img.hidden=false};img.onerror=()=>{img.hidden=true;hint.textContent='O arquivo foi recebido, mas o navegador não conseguiu abrir a imagem.'};img.src=url}catch(e){if(version===epoch){hint.replaceChildren(el('span','Não foi possível carregar: '+e.message));hint.append(button('Tentar carregar novamente',load))}}};
+   load();
   }
+
   if(card.texto)node.append(el('p',card.texto,'board-body'));
-  const actions=el('div',undefined,'actions');if(card.caminho)actions.append(button('Baixar arquivo',()=>openFile(card)));
+  const actions=el('div',undefined,'actions');if(card.caminho)actions.append(button('Visualizar',()=>preview(card)),button('Baixar arquivo',()=>openFile(card)));
   actions.append(button('Editar',async()=>{const title=await app.ask({title:'Título do cartão',input:card.titulo});if(!title)return;let texto=card.texto;if(card.tipo==='nota'){texto=await app.ask({title:'Texto da nota',input:card.texto,maxlength:10000});if(texto===null)return}await patch(card,{titulo:title.slice(0,100),texto})}));
   if(card.autor_id===app.user.id||master())actions.append(button('Remover',async()=>{if(!await app.ask({title:'Remover este cartão?',text:'O documento será removido da sala.'}))return;const target=epoch;if(card.caminho)await api('/storage/v1/object/mesa-documentos',{prefixes:[card.caminho]},'DELETE');await api('/rest/v1/sala_documentos?id=eq.'+card.id,undefined,'DELETE');if(target===epoch){document.activeElement.blur();await sync(true)}}));
   node.append(actions);root.append(node);
@@ -573,6 +594,7 @@ function renderBoard(){
 }
 function start(adapter){
  stop();app=adapter;
+ $('documentClose').onclick=()=>$('documentDialog').close();$('documentDialog').onclose=()=>{if(previewURL){URL.revokeObjectURL(previewURL);previewURL=''}$('documentContent').replaceChildren()};
  $('mesaCreate').onsubmit=e=>{e.preventDefault();run(async()=>{const version=epoch;const list=await api('/rest/v1/salas',{nome:$('mesaName').value.trim()},'POST',{Prefer:'return=representation'});if(version!==epoch)return;await enter(list[0]);await rooms()})};
  $('mesaJoin').onsubmit=e=>{e.preventDefault();run(()=>join($('mesaCode').value))};
  $('mesaShare').onclick=()=>run(share);$('mesaUnshare').onclick=()=>run(unshare);

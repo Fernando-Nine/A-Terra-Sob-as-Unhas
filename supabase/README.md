@@ -104,3 +104,16 @@ não permite apagar dados de outra pessoa. O botão **Limpar todas as minhas fic
 salva e baixa o backup antes de excluir os IDs encontrados. Em falha parcial,
 o backup permanece e a limpeza pode ser tentada novamente. Arquivos antigos de
 backup e o armazenamento legado anterior às contas são preservados.
+
+### Permanência e visualização dos documentos
+
+Fechar a aba ou sair da conta não remove cartões ou arquivos. Ao escolher
+**Sair da sala**, a associação do jogador é removida, mas os documentos permanecem
+e podem ser acessados ao entrar novamente pelo código. Somente a remoção
+explícita de um cartão com arquivo também exclui seu objeto no Storage.
+
+Os downloads usam a rota padrão `/storage/v1/object/mesa-documentos/...`, com
+autorização da sessão, como o cliente oficial do Supabase. O bucket permanece
+privado. Falhas de leitura aparecem no cartão com a mensagem recebida, sem
+apagar o arquivo. Imagens podem ser ampliadas e PDFs usam o visualizador nativo
+do navegador; o download permanece disponível caso o navegador não os exiba.
