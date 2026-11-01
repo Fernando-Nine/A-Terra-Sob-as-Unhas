@@ -1,11 +1,13 @@
 """Browser smoke test with a simulated Supabase API; no external requests."""
 import copy
 import json
+import re
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / 'site/index.html').read_text()
+BUILT = (ROOT / 'site/index.html').read_text()
+HTML = re.sub(r'window\.ATSU_ONLINE = .*?;', "window.ATSU_ONLINE = { url: '', key: '' };", BUILT, count=1, flags=re.S)
 CONFIGURED = HTML.replace("{ url: '', key: '' }", "{ url: 'https://example.supabase.co', key: 'public-test' }")
 rows = {}
 calls = []
