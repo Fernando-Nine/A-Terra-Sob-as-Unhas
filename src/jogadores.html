@@ -22,14 +22,14 @@
    <p class="auth-privacy">Suas fichas online ficam vinculadas à sua conta.<br>Diário e anotações não são compartilhados com a mesa.</p>
    <noscript><p>Ative o JavaScript do navegador para entrar e acessar suas fichas.</p></noscript>
   </div>
-  <footer class="auth-entry-foot">A TERRA SOB AS UNHAS <span>Fichas de investigador</span></footer>
+  <footer class="auth-entry-foot">A TERRA SOB AS UNHAS <button type="button" class="motion-toggle auth-motion" data-motion-toggle aria-pressed="true" aria-label="Desativar animações"><span aria-hidden="true">✦</span> Animações</button></footer>
  </div>
 </section>
 <div id="appScreen" hidden><div class="shell app-shell">
 <header class="app-header">
  <button class="app-brand" data-tab="inicio" aria-label="A Terra Sob as Unhas — início"><span class="app-sigil" aria-hidden="true">⌘</span><span>A TERRA<br>SOB AS UNHAS<small>Arquivo dos investigadores</small></span></button>
  <nav class="app-nav" aria-label="Categorias"><button data-tab="inicio" class="active" aria-current="page"><svg class="ui-icon" aria-hidden="true"><use href="#icon-inicio"/></svg><span>Início</span></button><button data-tab="ficha"><svg class="ui-icon" aria-hidden="true"><use href="#icon-ficha"/></svg><span>Fichas</span></button><button data-tab="dados"><svg class="ui-icon" aria-hidden="true"><use href="#icon-dados"/></svg><span>Dados</span></button><button data-tab="mesa"><svg class="ui-icon" aria-hidden="true"><use href="#icon-mesa"/></svg><span>Mesa</span></button><button data-tab="diario"><svg class="ui-icon" aria-hidden="true"><use href="#icon-diario"/></svg><span>Diário</span></button><button data-tab="regras"><svg class="ui-icon" aria-hidden="true"><use href="#icon-regras"/></svg><span>Como jogar</span></button></nav>
- <button id="onlineLogout" class="app-logout" aria-label="Sair da conta">Sair <span aria-hidden="true">→</span></button>
+ <div class="app-header-tools"><button type="button" class="motion-toggle" data-motion-toggle aria-pressed="true" aria-label="Desativar animações" title="Desativar animações"><span aria-hidden="true">✦</span><span class="motion-label">Animações</span></button><button id="onlineLogout" class="app-logout" aria-label="Sair da conta">Sair <span aria-hidden="true">→</span></button></div>
 </header>
 <main class="main app-main">
 <div class="app-status"><p id="onlineStatus" role="status" aria-live="polite"></p><div class="app-indicators"><span class="tag warn" id="saveStatus" role="status" hidden>⚠ Não foi possível salvar neste navegador</span><button class="tag" id="roomTag" hidden></button></div></div>

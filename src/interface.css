@@ -315,3 +315,48 @@ dialog.dlg::backdrop { background: #040b08d9; backdrop-filter: blur(4px); }
 
 .identity-panel h2, .pick b, .member b, #mesaRoomName { overflow-wrap: anywhere; }
 #appScreen .panel { min-width: 0; }
+
+/* Atmosfera e movimento: apenas decoração, com pausa e movimento reduzido. */
+.app-header-tools { display: flex; align-items: center; gap: 9px; }
+.motion-toggle { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 8px 10px; background: transparent; border: 1px solid #a18d5c40; color: #cbbb94; font-size: 10px; }
+.motion-toggle>span:first-child { font-size: 17px; line-height: 1; }
+.motion-toggle[aria-pressed=true] { background: #c2a56f0c; color: #efd69c; }
+.motion-toggle[aria-pressed=false] { color: #a5b49e; }
+.auth-entry .auth-motion { color: #58684b; border-color: #8c9c7045; padding: 6px 10px; min-height: 36px; font-size: 10px; }
+.auth-entry-foot { align-items: center; }
+.fx-button { position: relative; overflow: hidden; isolation: isolate; }
+.fx-ripple { position: absolute; pointer-events: none; border-radius: 50%; background: currentColor; z-index: -1; }
+html[data-motion=on] .home-hero { border-color: #d0ae6a88; box-shadow: 0 15px 55px #0003, 0 0 45px #a6883c0a; }
+html[data-motion=on] .home-hero:after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(circle at 76% 26%, #efd18e44 1px, transparent 3px), radial-gradient(circle at 58% 72%, #efd18e33 1px, transparent 3px), radial-gradient(circle at 90% 65%, #efd18e33 1px, transparent 3px), radial-gradient(ellipse at 70% 40%, #d2b06a0b, transparent 60%); animation: field-mist 9s ease-in-out infinite alternate; }
+html[data-motion=on] .home-copy h1 em { color: #e7c57f; text-shadow: 0 0 35px #d7ad4926; }
+html[data-motion=on] .home-visual svg { animation: field-float 9s ease-in-out infinite alternate; transform-origin: 50% 50%; }
+html[data-motion=on] .auth-art svg { animation: field-float 11s ease-in-out infinite alternate; }
+html[data-motion=on] .auth-story:before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at 45% 35%, #b4b36912, transparent 60%); pointer-events: none; animation: field-mist 10s ease-in-out infinite alternate; }
+html[data-motion=on] .app-nav button.active { box-shadow: inset 0 0 18px #bc984b08, 0 0 18px #d4b66f0a; }
+html[data-motion=on] .app-nav button.active:after { display: block; height: 1px; bottom: 4px; left: 15px; right: 15px; background: linear-gradient(90deg, transparent, #efd08b, transparent); animation: field-line .35s ease-out both; }
+html[data-motion=on] .primary { box-shadow: 0 3px 16px #d9b36318; }
+html[data-motion=on] .result-highlight { background: radial-gradient(ellipse at 50% 0, #efd28e25, transparent 90%), #3c3b25; border-color: #e9c77d; }
+html[data-motion=on] dialog[open] { animation: field-dialog .22s cubic-bezier(.2,.75,.25,1); }
+html[data-motion=on] input, html[data-motion=on] textarea, html[data-motion=on] select { transition: border-color .2s, box-shadow .2s, background-color .2s; }
+html[data-motion=on] button, html[data-motion=on] .btn { transition: transform .18s ease, background-color .2s, border-color .2s, box-shadow .2s, color .2s; }
+html[data-motion=on] .home-steps article, html[data-motion=on] .pick { transition: border-color .25s, box-shadow .25s, transform .25s; }
+@media (hover: hover) and (pointer: fine) {
+  html[data-motion=on] button:not(:disabled):not(.board-handle):not(.app-brand):hover { transform: translateY(-2px); }
+  html[data-motion=on] .primary:not(:disabled):hover { box-shadow: 0 5px 24px #d9b36333; }
+  html[data-motion=on] .home-steps article:hover, html[data-motion=on] .pick:hover { transform: translateY(-3px); border-color: #d7b87499; box-shadow: 0 12px 26px #0003; }
+  html[data-motion=on] .board-handle:hover { box-shadow: inset 0 2px #fcf3cd88; }
+}
+html[data-motion=on] button:not(:disabled):not(.board-handle):active { transform: scale(.98); }
+html[data-effects-paused=true] *, html[data-effects-paused=true] *:before, html[data-effects-paused=true] *:after { animation-play-state: paused !important; }
+html[data-motion=off] *, html[data-motion=off] *:before, html[data-motion=off] *:after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+html[data-motion=off] button, html[data-motion=off] .pick, html[data-motion=off] .home-steps article { transform: none !important; }
+@keyframes field-mist { from { opacity: .35; transform: translateY(0); } to { opacity: .85; transform: translateY(-9px); } }
+@keyframes field-float { from { transform: translateY(0) rotate(-1deg); opacity: .55; } to { transform: translateY(-9px) rotate(1deg); opacity: .85; } }
+@keyframes field-line { from { transform: scaleX(.1); opacity: .1; } to { transform: scaleX(1); opacity: 1; } }
+@keyframes field-dialog { from { opacity: .35; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-width: 1150px) { .app-header-tools { gap: 6px; }.motion-label { display: none; }.motion-toggle { width: 40px; justify-content: center; padding: 8px; } }
+@media (max-width: 660px) { .app-brand { min-width: 0; }.app-header-tools { flex: none; }.auth-entry .auth-motion { width: auto; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *:before, *:after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+@media print { .motion-toggle, .fx-ripple { display: none !important; } }

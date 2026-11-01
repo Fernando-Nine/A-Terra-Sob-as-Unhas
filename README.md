@@ -10,6 +10,8 @@ no navegador, no computador ou no celular, com acesso por e-mail e senha e sem i
 - Entre na sua conta (ou use **Criar conta** no primeiro acesso).
 - A página **Início** apresenta o sistema. Use as categorias no topo para abrir
   **Fichas**, **Dados**, **Mesa**, **Diário** ou **Como jogar**.
+- Use **Animações** no topo para ativar ou pausar os efeitos. A preferência de
+  movimento reduzido do aparelho é respeitada.
 - A seção Fichas começa vazia: crie seu investigador ou importe um arquivo.
 - Distribua seus **10 PP** entre as sete habilidades: Eloquência, Força, Medicina, Ocultismo,
   Psicologia, Visão e Investigação. Subir do nível *n* para *n+1* custa *n+1* PP.
@@ -63,7 +65,8 @@ src/jogadores.html   modelo da página (com /*CSS_INLINE*/ e /*JS_INLINE*/)
 src/jogadores.js     fichas, PP, rolagens, diário, exportar/importar, aba Mesa
 src/sala.js          sala ao vivo (compartilhada com o escudo do Mestre)
 src/style.css        estilos base (compartilhados com o escudo do Mestre)
-src/interface.css    identidade visual do portal, telas e componentes dos jogadores
+src/interface.css    identidade visual, animações e movimento reduzido
+src/effects.js       efeitos visuais, rolagens animadas e preferência de movimento
 build.py             junta tudo em site/index.html
 site/index.html      página pronta, publicada pelo GitHub Pages
 site/vendor/         MQTT.js 5.16.0 (MIT), baixado só por quem entra numa sala

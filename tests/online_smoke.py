@@ -175,6 +175,28 @@ with sync_playwright() as playwright:
         assert a.locator('#authStatus img').count()==0
     auth_error=None
     login(a, signup=True)
+    # Efeitos visuais não geram sorteios extras nem ocultam o conteúdo ao desativar.
+    a.locator('.app-nav [data-tab=dados]').click()
+    a.click('#rollBtn')
+    assert a.evaluate("document.getElementById('die1').getAnimations().some(a=>a.playState==='running')")
+    assert a.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).characters[JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).selected].history.length")==1
+    a.click('#rollBtn')
+    assert a.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).characters[JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).selected].history.length")==2
+    a.locator('.app-header [data-motion-toggle]').click()
+    assert a.evaluate("document.documentElement.dataset.motion === 'off'")
+    assert a.evaluate("document.getAnimations().filter(a=>a.playState==='running').length")==0
+    a.reload()
+    a.wait_for_selector('#view-inicio:not([hidden])')
+    assert a.evaluate("document.documentElement.dataset.motion === 'off' && localStorage.getItem('atsu.motion')==='off'")
+    a.emulate_media(reduced_motion='reduce')
+    a.wait_for_function("document.querySelector('.app-header [data-motion-toggle]').disabled")
+    assert a.locator('.app-header [data-motion-toggle]').is_disabled()
+    assert a.evaluate("getComputedStyle(document.querySelector('.home-visual svg')).animationName==='none'")
+    assert a.locator('#homeTitle').is_visible()
+    a.emulate_media(reduced_motion='no-preference')
+    a.locator('.app-header [data-motion-toggle]').click()
+    assert a.evaluate("document.documentElement.dataset.motion === 'on'")
+    a.locator('.app-nav [data-tab=ficha]').click()
     a.click('#onlineUpload')
     confirm(a)
     a.wait_for_selector('#onlineSheets button')
@@ -263,4 +285,4 @@ with sync_playwright() as playwright:
     a.screenshot(path='/tmp/atsu-auth-desktop.png', full_page=True)
     assert not errors_a + errors_b, errors_a + errors_b
     browser.close()
-print('PASS: home, top navigation, category data preservation, login gate, session validation/refresh, account isolation, password signup/login, invalid password, confirmation required, upload, second browser load, autosave, conflicts, network retry, logout, mobile')
+print('PASS: animation toggle, reduced motion, dice animation without extra rolls, home, top navigation, category data preservation, login gate, session validation/refresh, account isolation, password signup/login, invalid password, confirmation required, upload, second browser load, autosave, conflicts, network retry, logout, mobile')

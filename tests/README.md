@@ -1,7 +1,8 @@
 # Validação
 
 `python3 tests/online_smoke.py`: login, fichas vazias, criação de investigador,
-salvamento, conflito, separação de contas e navegação.
+salvamento, conflito, separação de contas e navegação. Também verifica pausa das
+animações, preferência persistida, movimento reduzido e uma rolagem por clique.
 
 `python3 tests/rooms_smoke.py`: dois navegadores com API simulada; criação de sala,
 compartilhamento de fichas e rolagens, privacidade dos dados do Mestre, notas,
