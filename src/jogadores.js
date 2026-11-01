@@ -6,7 +6,7 @@ const fresh=(id,name,job,age,origin,bio)=>({id,name,job,age,origin,bio,skills:Ob
 function initial(){const characters={};base.forEach(a=>characters[a[0]]=fresh(...a));return {selected:'bispo',characters}}
 let state;try{state=JSON.parse(localStorage.getItem(STORE)||'null')||initial()}catch{state=initial()}
 if(!state.characters||typeof state.characters!=='object')state=initial();if(!state.characters[state.selected])state.selected=Object.keys(state.characters)[0];
-function char(){return state.characters[state.selected]};function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').textContent='● Salvo neste navegador'}catch{$('#saveStatus').textContent='⚠ Armazenamento bloqueado'}roomChanged()}
+function char(){return state.characters[state.selected]};function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').textContent='● Salvo neste navegador'}catch{$('#saveStatus').textContent='⚠ Armazenamento bloqueado'}roomChanged();window.ATSUOnline?.changed()}
 let toastTimer;function toast(s){const el=$('#toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function spent(c){return SKILLS.reduce((total,[k])=>{const lv=num(c.skills[k]||0,0,5);return total+lv*(lv+1)/2},0)}
 const remaining=c=>Math.max(0,c.ppTotal-spent(c));
@@ -96,6 +96,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  $('#roomPanel').addEventListener('click',ev=>{if(ev.target.id==='roomLeave'){roomLeave(true);toast('Você saiu da sala. Sua ficha foi retirada da mesa.')}else if(ev.target.id==='roomShare'){roomShare(state.selected);toast(`${char().name} está na mesa.`)}});
  $('#roomTag').addEventListener('click',()=>tab('mesa'));
  renderAll();
+ ATSUOnline.start({current:char,confirm:(title,text)=>ask({title,text}),open:raw=>{const c=normalizeImported({format:'ATSU-personagem-1',character:raw});state.characters[c.id]=c;state.selected=c.id;renderAll();return c}});
  // Recarregar mantém a sala e o investigador; um link de sala nova pede para escolher o investigador.
  const urlCode=ATSUSala.limparCodigo(new URLSearchParams(location.search).get('sala'));let saved='',savedShare='';try{saved=ATSUSala.limparCodigo(localStorage.getItem(ROOM_KEY));savedShare=localStorage.getItem(SHARE_KEY)||''}catch{}
  const start=urlCode||saved;if(start){roomJoin(start,start===saved?savedShare:'');if(!room.shareId)toast(`Você entrou na sala ${start}. Toque no seu investigador para entrar na mesa.`)}

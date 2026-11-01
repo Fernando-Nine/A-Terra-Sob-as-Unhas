@@ -23,18 +23,23 @@ no navegador, no computador ou no celular, sem conta e sem instalar nada.
 1. O Mestre cria a sala no escudo e passa o link (ou o código).
 2. Você abre o link, ou digita o código na aba **Mesa**, e toca no seu investigador.
 3. A mesa passa a ver seu nome, Vida, Sanidade, Raiz, níveis e suas últimas rolagens, e você
-   vê os dos outros. **O diário e as anotações nunca saem do seu navegador.**
+   vê os dos outros. **O diário e as anotações não são enviados à mesa.** Ao salvar online, a ficha completa fica na sua conta.
 
 A sala é opcional. Não há senha: quem souber o código vê esses dados. As mensagens passam por
 um servidor público e gratuito (broker.emqx.io); rolagens com mais de 6 horas somem da mesa.
 **Sair da sala** retira sua ficha da mesa.
 
-**A ficha fica salva só no navegador que você usou.** Para levar a outro aparelho, use
-**Exportar ficha** e depois **Importar ficha** do outro lado. Fora da sala, nada é enviado.
+**Por padrão, a ficha fica salva no navegador que você usou.** Com o salvamento online
+ativado, entre na sua conta e abra a ficha em outro aparelho. Você também pode usar
+**Exportar ficha** e depois **Importar ficha** do outro lado. Fora da sala, dados só são enviados se você usar o salvamento online.
 
 ## Para quem mantém o site
 
-Site estático, sem dependências: HTML, CSS e JavaScript puros.
+Site estático, sem dependências de build: HTML, CSS e JavaScript puros.
+
+O salvamento online opcional usa Supabase, com login por código enviado ao e-mail.
+Veja [como ativar e testar](supabase/README.md). Sem configurar esse serviço, as
+fichas continuam salvas apenas no navegador.
 
 ```
 src/jogadores.html   modelo da página (com /*CSS_INLINE*/ e /*JS_INLINE*/)
