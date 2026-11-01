@@ -37,7 +37,7 @@ ativado, entre na sua conta e abra a ficha em outro aparelho. Você também pode
 
 Site estático, sem dependências de build: HTML, CSS e JavaScript puros.
 
-O salvamento online opcional usa Supabase, com login por código enviado ao e-mail.
+O salvamento online opcional usa Supabase, com login por e-mail e senha.
 Veja [como ativar e testar](supabase/README.md). Sem configurar esse serviço, as
 fichas continuam salvas apenas no navegador.
 

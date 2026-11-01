@@ -12,6 +12,7 @@ CONFIGURED = HTML.replace("{ url: '', key: '' }", "{ url: 'https://example.supab
 rows = {}
 calls = []
 failure = False
+confirmation_required = False
 
 
 def api(route):
@@ -20,9 +21,15 @@ def api(route):
     if failure:
         route.fulfill(status=503, json={'message': 'offline'})
         return
-    if '/auth/v1/otp' in request.url:
-        route.fulfill(json={})
-    elif '/auth/v1/verify' in request.url or '/auth/v1/token' in request.url:
+    if '/auth/v1/signup' in request.url or '/auth/v1/token' in request.url:
+        if 'grant_type=refresh_token' not in request.url:
+            assert request.post_data_json['email'] == 'a@example.com'
+            if request.post_data_json['password'] != 'test-password-123':
+                route.fulfill(status=400, json={'code': 'invalid_credentials'})
+                return
+        if '/signup' in request.url and confirmation_required:
+            route.fulfill(json={'user': {'id': 'unconfirmed'}})
+            return
         route.fulfill(json={'access_token': 'test-session', 'refresh_token': 'test-refresh',
                             'expires_in': 3600, 'user': {'id': 'owner-a', 'email': 'a@example.com'}})
     elif '/auth/v1/logout' in request.url:
@@ -61,13 +68,13 @@ def open_page(browser, configured=True):
     return context, page, errors
 
 
-def login(page):
+def login(page, signup=False):
     page.fill('#onlineEmail', 'a@example.com')
-    page.click('#sendCode')
-    page.wait_for_selector('#onlineCode')
-    page.fill('#onlineCode', '123456')
-    page.locator('#verifyCode button').click()
+    page.fill('#onlinePassword', 'test-password-123')
+    page.click('#onlineSignup' if signup else '#onlineSignin')
     page.wait_for_selector('#onlineUpload')
+    assert page.locator('#onlinePassword').input_value() == ''
+    assert 'test-password-123' not in page.evaluate('JSON.stringify(sessionStorage)')
 
 
 def confirm(page):
@@ -86,7 +93,20 @@ with sync_playwright() as playwright:
     local.close()
 
     first, a, errors_a = open_page(browser)
-    login(a)
+    # Both invalid credentials and unconfirmed signup must leave the visitor signed out.
+    a.fill('#onlineEmail', 'a@example.com')
+    a.fill('#onlinePassword', 'wrong-password')
+    a.click('#onlineSignin')
+    a.wait_for_function("document.getElementById('onlineStatus').textContent.includes('incorretos')")
+    assert a.locator('#onlineAccount').is_hidden()
+    confirmation_required = True
+    a.fill('#onlinePassword', 'test-password-123')
+    a.click('#onlineSignup')
+    a.wait_for_function("document.getElementById('onlineStatus').textContent.includes('Confirm email')")
+    assert a.locator('#onlineAccount').is_hidden()
+    assert not a.evaluate("sessionStorage.getItem('atsu.auth')")
+    confirmation_required = False
+    login(a, signup=True)
     a.click('#onlineUpload')
     confirm(a)
     a.wait_for_selector('#onlineSheets button')
@@ -120,7 +140,7 @@ with sync_playwright() as playwright:
     b.wait_for_function("document.getElementById('onlineStatus').textContent === '● Ficha salva online'")
     assert saved['character']['skills']['forca'] == 1
     b.click('#onlineLogout')
-    b.wait_for_selector('#sendCode')
+    b.wait_for_selector('#onlineSignin')
     count = len([call for call in calls if call[0] == 'PATCH'])
     b.get_by_role('button', name='Aumentar Força', exact=True).click()
     b.wait_for_timeout(1000)
@@ -129,4 +149,4 @@ with sync_playwright() as playwright:
     assert b.evaluate('document.documentElement.scrollWidth <= innerWidth')
     assert not errors_a + errors_b, errors_a + errors_b
     browser.close()
-print('PASS: offline, email login, upload, second browser load, autosave, conflicts, network retry, logout, mobile')
+print('PASS: offline, password signup/login, invalid password, confirmation required, upload, second browser load, autosave, conflicts, network retry, logout, mobile')

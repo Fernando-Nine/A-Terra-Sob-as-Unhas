@@ -5,12 +5,19 @@ dados. Sem essa configuração, as fichas continuam funcionando localmente.
 
 1. Crie um projeto em https://supabase.com e execute `schema.sql` no SQL Editor.
    A política RLS permite que cada conta consulte e altere apenas suas fichas.
-2. Em Authentication, habilite o provedor Email e a criação de usuários. No modelo
-   de e-mail **Magic Link**, inclua `{{ .Token }}` para enviar o código de acesso
-   em vez de depender de um link. O site usa código de 6 a 8 dígitos. Configure
-   também a URL do site como `https://fernando-nine.github.io/A-Terra-Sob-as-Unhas/`.
-   Para uso com jogadores, configure um provedor SMTP: o envio padrão do Supabase
-   possui restrições de destinatários e limites que podem impedir esses logins.
+2. Em **Authentication → Sign In / Providers → Email** (em algumas versões,
+   **Authentication → Providers → Email**), mantenha **Enable Email provider**
+   ativado e desative **Confirm email** / **Confirm email address**. Clique em
+   **Save**. Se houver bloqueio de cadastros, habilite **Allow new users to sign up**
+   em **Authentication → Sign In / Providers → User Signups**. Configure também
+   a URL do site como `https://fernando-nine.github.io/A-Terra-Sob-as-Unhas/`.
+   Não precisa configurar SMTP nem os modelos de e-mail para este fluxo.
+   Sem confirmação, o endereço informado não é verificado: cada conta continua
+   protegida pela senha e pelas políticas RLS. A recuperação de senha por e-mail
+   não está disponível sem um serviço de envio; os jogadores precisam guardar
+   suas senhas. Contas criadas antes de desativar a confirmação podem continuar
+   não confirmadas; revise-as em Authentication → Users, sem apagar usuários
+   com fichas salvas. Desativar a opção não garante confirmar contas antigas.
 3. Copie a Project URL e a chave **publishable** (ou a chave legada **anon**) em
    `src/online-config.js`. Essas duas configurações são públicas. **Nunca use uma
    chave secret ou service_role**, pois ela permite ignorar as políticas do banco.
@@ -24,7 +31,8 @@ dados. Sem essa configuração, as fichas continuam funcionando localmente.
 
 ## Fluxo do jogador
 
-Entre com seu e-mail e digite o código recebido. Escolha uma ficha local e use
+No primeiro acesso, preencha e-mail e senha (pelo menos 8 caracteres) e clique
+em **Criar conta**. Nos próximos acessos, use **Entrar**. Escolha uma ficha local e use
 **Salvar ficha atual como nova ficha online**. Esse envio é explícito e inclui
 diário e anotações privadas; a sala MQTT continua recebendo apenas o resumo.
 Em outro aparelho, entre com o mesmo e-mail e abra a ficha da lista. Depois de
@@ -47,4 +55,5 @@ atual remove apenas a cópia local; não apaga o backup online.
 `python3 tests/online_smoke.py` usa Playwright e Chromium instalados no ambiente
 de desenvolvimento, sem dependências adicionadas ao aplicativo. Simula a API
 para testar login, envio, leitura em outro navegador, salvamento, conflito,
-falha de rede e saída. Não envia e-mails nem acessa um banco real.
+falha de rede e saída. Não envia e-mails nem acessa um banco real. Testa cadastro, senha incorreta e
+cadastro que ainda exige confirmação, além do fluxo de fichas.
