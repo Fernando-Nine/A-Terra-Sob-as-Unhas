@@ -1,12 +1,13 @@
 # A Terra Sob as Unhas
 
 Fichas dos investigadores para a campanha de horror cósmico **A Terra Sob as Unhas**. Funciona
-no navegador, no computador ou no celular, sem conta e sem instalar nada.
+no navegador, no computador ou no celular, com acesso por e-mail e senha e sem instalar nada.
 
 **Abrir as fichas:** https://fernando-nine.github.io/A-Terra-Sob-as-Unhas/
 
 ## Para quem joga
 
+- Entre na sua conta (ou use **Criar conta** no primeiro acesso).
 - Escolha seu investigador (Bispo, Wiiz, Goudl ou Nine) ou crie um novo.
 - Distribua seus **10 PP** entre as sete habilidades: Eloquência, Força, Medicina, Ocultismo,
   Psicologia, Visão e Investigação. Subir do nível *n* para *n+1* custa *n+1* PP.
@@ -38,8 +39,8 @@ ativado, entre na sua conta e abra a ficha em outro aparelho. Você também pode
 Site estático, sem dependências de build: HTML, CSS e JavaScript puros.
 
 O salvamento online opcional usa Supabase, com login por e-mail e senha.
-Veja [como ativar e testar](supabase/README.md). Sem configurar esse serviço, as
-fichas continuam salvas apenas no navegador.
+Veja [como ativar e testar](supabase/README.md). O acesso à página das fichas exige
+uma sessão válida no Supabase; sem configuração ou conexão, a tela de entrada permanece.
 
 ```
 src/jogadores.html   modelo da página (com /*CSS_INLINE*/ e /*JS_INLINE*/)

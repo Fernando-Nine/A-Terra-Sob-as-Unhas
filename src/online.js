@@ -1,12 +1,33 @@
 // Supabase Auth e PostgREST via HTTPS; nenhuma chave secreta no navegador.
 window.ATSUOnline = (() => {
  'use strict';
- let app, session=null, bound=null, timer, busy=false, generation=0, refreshing;
+ let app, session=null, bound=null, timer, busy=false, generation=0, refreshing, renewal, mode='login';
  const config=window.ATSU_ONLINE||{}, base=(config.url||'').replace(/\/$/, '');
  const $=id=>document.getElementById(id);
- const status=text=>{$('onlineStatus').textContent=text};
+ const status=(text,kind='info')=>{const node=$('appScreen').hidden?$('authStatus'):$('onlineStatus');node.textContent=text;node.dataset.kind=kind};
  const validConfig=()=>/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(base)&&!!config.key;
- function remember(){try{sessionStorage.setItem('atsu.auth',JSON.stringify(session))}catch{}}
+ function remember(){try{if(session)sessionStorage.setItem('atsu.auth',JSON.stringify(session));else sessionStorage.removeItem('atsu.auth')}catch{}}
+ function lock(message='Entre para acessar suas fichas.'){
+  generation++;bound=null;clearTimeout(timer);clearTimeout(renewal);session=null;remember();
+  $('appScreen').hidden=true;$('authScreen').hidden=false;$('onlineLogin').hidden=false;
+  app.leave();$('onlineSheets').replaceChildren();$('onlinePassword').value='';$('authConfirmPassword').value='';status(message);
+ }
+ function unlock(){
+  app.enter(session.user);$('authScreen').hidden=true;$('appScreen').hidden=false;account();
+  $('homeTitle').focus();clearTimeout(renewal);
+  renewal=setTimeout(restore,Math.max(1000,(session.expires_at*1000-Date.now()-45000)));
+ }
+ async function restore(){
+  const version=generation;
+  try{
+   const user=await request('/auth/v1/user',undefined,'GET',true);
+   if(version!==generation)return;
+   if(!user?.id||user.id!==session?.user?.id)throw Error('Entre novamente para acessar sua conta.');
+   const alreadyOpen=!$('appScreen').hidden;session.user=user;remember();
+   if(!alreadyOpen){unlock();status('Conta conectada. Abra uma ficha online ou envie a ficha atual.');run(list)}
+   else{clearTimeout(renewal);renewal=setTimeout(restore,Math.max(1000,session.expires_at*1000-Date.now()-45000))}
+  }catch(e){if(version===generation)lock('Não foi possível validar sua sessão. Entre novamente.');}
+ }
  async function request(path,body,method='POST',authenticated=false,extra={}){
   if(authenticated){
    if(!session)throw Error('Entre novamente para salvar.');
@@ -15,9 +36,12 @@ window.ATSUOnline = (() => {
     await refreshing;
    }
   }
-  const response=await fetch(base+path,{method,headers:{apikey:config.key,'Content-Type':'application/json',...(authenticated?{Authorization:'Bearer '+session.access_token}:{}),...extra},...(body===undefined?{}:{body:JSON.stringify(body)})});
+  let response;
+  try{response=await fetch(base+path,{method,headers:{apikey:config.key,'Content-Type':'application/json',...(authenticated?{Authorization:'Bearer '+session.access_token}:{}),...extra},...(body===undefined?{}:{body:JSON.stringify(body)})});}
+  catch{throw Error('Não foi possível conectar. Verifique sua conexão e tente novamente.');}
   if(!response.ok){
    const error=await response.json().catch(()=>({}));
+   if(authenticated&&response.status===401){lock('Sua sessão expirou. Entre novamente.');throw Error('Sua sessão expirou. Entre novamente.');}
    if(error.code==='email_not_confirmed')throw Error('Seu e-mail ainda não foi confirmado. O responsável pelo site precisa revisar a configuração da conta no Supabase.');
    if(error.code==='invalid_credentials')throw Error('E-mail ou senha incorretos.');
    if(error.code==='user_already_exists')throw Error('Não foi possível criar a conta. Se já tem cadastro, use Entrar.');
@@ -59,16 +83,30 @@ window.ATSUOnline = (() => {
   finally{busy=false}
  }
  function changed(){clearTimeout(timer);timer=setTimeout(save,700)}
- async function run(fn){try{await fn()}catch(e){status(e.message)}}
+ async function run(fn){try{await fn()}catch(e){status(e.message,'error')}}
+ function setMode(next){
+  mode=next;const signup=mode==='signup';
+  $('authModeLogin').setAttribute('aria-pressed',String(!signup));$('authModeSignup').setAttribute('aria-pressed',String(signup));
+  $('authTitle').textContent=signup?'Sua história começa aqui.':'Bem-vindo de volta.';
+  $('authSubtitle').textContent=signup?'Crie seu acesso ao arquivo dos investigadores.':'Entre para continuar a sua investigação.';
+  $('authSubmit').textContent=signup?'Criar minha conta →':'Entrar no arquivo →';
+  $('authConfirmField').hidden=!signup;$('authConfirmPassword').required=signup;$('authConfirmPassword').value='';
+  $('onlinePassword').autocomplete=signup?'new-password':'current-password';
+  $('passwordHint').textContent=signup?'Use pelo menos 8 caracteres e guarde sua senha. Não há recuperação por e-mail, e o endereço informado não é verificado.':'Use a senha da sua conta. A recuperação por e-mail ainda não está disponível.';
+  status('');
+ }
  function start(adapter){
   app=adapter;
-  if(!validConfig()){status('Salvamento online ainda não ativado. As fichas continuam salvas neste navegador.');$('onlineLogin').hidden=true;return;}
-  try{session=JSON.parse(sessionStorage.getItem('atsu.auth')||'null');if(!session?.user?.id||!session.refresh_token)session=null}catch{session=null}
-  account();if(session){status('Conta conectada. Abra uma ficha online ou envie a ficha atual.');run(list)}
+  if(!validConfig()){status('O acesso ainda não foi configurado. Avise o responsável pelo site.','error');$('authSubmit').disabled=true;return;}
+  try{session=JSON.parse(sessionStorage.getItem('atsu.auth')||'null');if(!session?.user?.id||!session.refresh_token||!session.access_token||!Number.isFinite(session.expires_at))session=null}catch{session=null}
+  $('authModeLogin').onclick=()=>setMode('login');$('authModeSignup').onclick=()=>setMode('signup');
+  $('authShowPassword').onclick=()=>{const visible=$('onlinePassword').type==='password';$('onlinePassword').type=visible?'text':'password';$('authShowPassword').textContent=visible?'Ocultar':'Mostrar';$('authShowPassword').setAttribute('aria-label',visible?'Ocultar senha':'Mostrar senha');$('authShowPassword').setAttribute('aria-pressed',String(visible))};
+  if(session){status('Validando sua sessão…');$('authSubmit').disabled=true;restore().finally(()=>$('authSubmit').disabled=false)}
   $('onlineLogin').onsubmit=event=>{event.preventDefault();
-   const signup=event.submitter?.id==='onlineSignup';
+   const signup=mode==='signup';
    run(async()=>{
-    const buttons=[$('onlineSignin'),$('onlineSignup')];buttons.forEach(b=>b.disabled=true);
+    if(signup&&$('onlinePassword').value!==$('authConfirmPassword').value){status('As senhas não coincidem. Digite a mesma senha nos dois campos.','error');$('authConfirmPassword').focus();return;}
+    const buttons=[$('authSubmit'),$('authModeLogin'),$('authModeSignup')];buttons.forEach(b=>b.disabled=true);
     try{
      const credentials={email:$('onlineEmail').value.trim(),password:$('onlinePassword').value};
      status(signup?'Criando conta…':'Entrando…');
@@ -76,13 +114,13 @@ window.ATSUOnline = (() => {
      if(!s.access_token||!s.refresh_token||!s.user?.id){
       status('O cadastro não iniciou uma sessão. O responsável precisa desativar Confirm email no Supabase. Não há envio de código neste site.');return;
      }
-     generation++;bound=null;session={...s,expires_at:Date.now()/1000+s.expires_in};remember();$('onlinePassword').value='';account();status('Login concluído. Escolha uma ficha online ou envie a ficha atual.');await list();
+     generation++;bound=null;session={...s,expires_at:Date.now()/1000+s.expires_in};remember();$('onlinePassword').value='';$('authConfirmPassword').value='';unlock();status('Login concluído. Escolha uma ficha online ou envie a ficha atual.');await list();
     }finally{buttons.forEach(b=>b.disabled=false)}
    });
   };
   $('onlineLogout').onclick=()=>run(async()=>{
    // Invalida primeiro o vínculo de salvamento, inclusive com uma requisição em andamento.
-   const token=session?.access_token;generation++;bound=null;clearTimeout(timer);session=null;remember();account();$('onlineSheets').replaceChildren();status('Você saiu. Suas fichas locais continuam neste aparelho.');
+   const token=session?.access_token;lock('Você saiu da conta. Até a próxima investigação.');$('onlineEmail').focus();
    if(token)await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:config.key,Authorization:'Bearer '+token}});
   });
   $('onlineRefresh').onclick=()=>run(list);

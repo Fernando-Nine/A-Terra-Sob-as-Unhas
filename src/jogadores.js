@@ -1,12 +1,12 @@
 (()=>{'use strict';
-const STORE='atsu.jogadores.v1',SKILLS=[['eloquencia','Eloquência','Conversas, influência, negociação e intimidação verbal.'],['forca','Força','Esforço físico, carregar, arrombar, lutar e resistência muscular.'],['medicina','Medicina','Atendimento, ferimentos, diagnósticos e biologia clínica.'],['ocultismo','Ocultismo','Reconhecer símbolos, histórias e tradições ocultas; não significa entender Ka’a-Po’a.'],['psicologia','Psicologia','Ler emoções, notar contradições e compreender comportamento.'],['visao','Visão','Encontrar detalhes visuais, rastros, pistas discretas e padrões.'],['investigacao','Investigação','Pesquisar arquivos, cruzar informações, decifrar dados e organizar provas.']];
+let STORE='';
+const SKILLS=[['eloquencia','Eloquência','Conversas, influência, negociação e intimidação verbal.'],['forca','Força','Esforço físico, carregar, arrombar, lutar e resistência muscular.'],['medicina','Medicina','Atendimento, ferimentos, diagnósticos e biologia clínica.'],['ocultismo','Ocultismo','Reconhecer símbolos, histórias e tradições ocultas; não significa entender Ka’a-Po’a.'],['psicologia','Psicologia','Ler emoções, notar contradições e compreender comportamento.'],['visao','Visão','Encontrar detalhes visuais, rastros, pistas discretas e padrões.'],['investigacao','Investigação','Pesquisar arquivos, cruzar informações, decifrar dados e organizar provas.']];
 const base=[['bispo','Bispo','Detetive particular',44,'Anápolis · Brasília','Ex-policial civil que investiga casos que a corporação prefere esquecer.'],['wiiz','Wiiz','Médico',37,'Goiânia · Brasília','Plantonista que desconfia de laudos concluídos rapidamente.'],['goudl','Goudl','Arquivista',33,'Brasília','Servidor dedicado à pesquisa e à ordem dos documentos.'],['nine','Nine','Jornalista',29,'Palmas · Brasília','Repórter independente que investiga política e meio ambiente.']];
 const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), num=(n,a,b)=>Math.max(a,Math.min(b,Number.isFinite(+n)?Math.trunc(+n):a));
 const fresh=(id,name,job,age,origin,bio)=>({id,name,job,age,origin,bio,skills:Object.fromEntries(SKILLS.map(s=>[s[0],0])),ppTotal:10,hp:6,hpMax:6,san:10,sanMax:10,root:1,clues:'',inventory:'',privateNotes:'',history:[]});
 function initial(){const characters={};base.forEach(a=>characters[a[0]]=fresh(...a));return {selected:'bispo',characters}}
-let state;try{state=JSON.parse(localStorage.getItem(STORE)||'null')||initial()}catch{state=initial()}
-if(!state.characters||typeof state.characters!=='object')state=initial();if(!state.characters[state.selected])state.selected=Object.keys(state.characters)[0];
-function char(){return state.characters[state.selected]};function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').textContent='● Salvo neste navegador'}catch{$('#saveStatus').textContent='⚠ Armazenamento bloqueado'}roomChanged();window.ATSUOnline?.changed()}
+let state=initial();
+function char(){return state.characters[state.selected]};function persist(){if(!STORE)return;try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').textContent='● Salvo neste navegador'}catch{$('#saveStatus').textContent='⚠ Armazenamento bloqueado'}roomChanged();window.ATSUOnline?.changed()}
 let toastTimer;function toast(s){const el=$('#toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function spent(c){return SKILLS.reduce((total,[k])=>{const lv=num(c.skills[k]||0,0,5);return total+lv*(lv+1)/2},0)}
 const remaining=c=>Math.max(0,c.ppTotal-spent(c));
@@ -47,7 +47,8 @@ function quickRoll(){if(qrSkill)showResult(rollTest(qrSkill,qrTarget,$('#qrMod')
 // Vai para a mesa só o resumo de UM investigador (o que a pessoa escolheu compartilhar) e as
 // rolagens dele. Quem entra pelo link não compartilha nada até tocar no próprio investigador:
 // senão a ficha que vem selecionada por padrão iria para a mesa no lugar da dela. O diário não sai daqui.
-const ROOM_KEY='atsu.sala.v1',SHARE_KEY='atsu.sala.ficha.v1',CID_KEY='atsu.cid.v1',ROLL_TTL=6*3600*1000;
+let ROOM_KEY='',SHARE_KEY='',CID_KEY='';
+const ROLL_TTL=6*3600*1000;
 const room={code:'',conn:null,status:'fora',members:{},rolls:{},mine:[],timer:null,last:'',shareId:''};
 const ROOM_SHORT={conectando:'conectando…',conectado:'ao vivo',reconectando:'sem conexão','sem-conexao':'sem conexão','sem-biblioteca':'erro de conexão'};
 const myCid=()=>ATSUSala.meuCid(CID_KEY);
@@ -95,10 +96,25 @@ window.addEventListener('DOMContentLoaded',()=>{
  $('#roomPanel').addEventListener('submit',ev=>{ev.preventDefault();const code=ATSUSala.limparCodigo($('#roomCode').value);if(!code){$('#roomCode').focus();return}roomJoin(code,state.selected);toast(`Você entrou na sala ${code} como ${char()?.name||'—'}.`)});
  $('#roomPanel').addEventListener('click',ev=>{if(ev.target.id==='roomLeave'){roomLeave(true);toast('Você saiu da sala. Sua ficha foi retirada da mesa.')}else if(ev.target.id==='roomShare'){roomShare(state.selected);toast(`${char().name} está na mesa.`)}});
  $('#roomTag').addEventListener('click',()=>tab('mesa'));
- renderAll();
- ATSUOnline.start({current:char,confirm:(title,text)=>ask({title,text}),open:raw=>{const c=normalizeImported({format:'ATSU-personagem-1',character:raw});state.characters[c.id]=c;state.selected=c.id;renderAll();return c}});
- // Recarregar mantém a sala e o investigador; um link de sala nova pede para escolher o investigador.
- const urlCode=ATSUSala.limparCodigo(new URLSearchParams(location.search).get('sala'));let saved='',savedShare='';try{saved=ATSUSala.limparCodigo(localStorage.getItem(ROOM_KEY));savedShare=localStorage.getItem(SHARE_KEY)||''}catch{}
- const start=urlCode||saved;if(start){roomJoin(start,start===saved?savedShare:'');if(!room.shareId)toast(`Você entrou na sala ${start}. Toque no seu investigador para entrar na mesa.`)}
+ ATSUOnline.start({
+  current:char,confirm:(title,text)=>ask({title,text}),
+  open:raw=>{const c=normalizeImported({format:'ATSU-personagem-1',character:raw});state.characters[c.id]=c;state.selected=c.id;renderAll();return c},
+  enter:user=>{
+   STORE='atsu.jogadores.v1.'+user.id;ROOM_KEY='atsu.sala.v1.'+user.id;SHARE_KEY='atsu.sala.ficha.v1.'+user.id;CID_KEY='atsu.cid.v1.'+user.id;
+   try{state=JSON.parse(localStorage.getItem(STORE)||'null')||initial()}catch{state=initial()}
+   if(!state.characters||!Object.keys(state.characters).length)state=initial();
+   if(!state.characters[state.selected])state.selected=Object.keys(state.characters)[0];
+   renderAll();tab('ficha');
+   const urlCode=ATSUSala.limparCodigo(new URLSearchParams(location.search).get('sala'));let saved='',savedShare='';try{saved=ATSUSala.limparCodigo(localStorage.getItem(ROOM_KEY));savedShare=localStorage.getItem(SHARE_KEY)||''}catch{}
+   const start=urlCode||saved;if(start){roomJoin(start,start===saved?savedShare:'');if(!room.shareId)toast(`Você entrou na sala ${start}. Toque no seu investigador para entrar na mesa.`)}
+  },
+  leave:()=>{if(STORE)roomLeave(false);room.code='';room.shareId='';room.mine=[];STORE='';state=initial();document.querySelectorAll('dialog[open]').forEach(d=>d.close());$('#charPane').replaceChildren();['clues','inventory','privateNotes'].forEach(k=>$('#'+k).value='')}
+ });
+ $('#recoverLocal').addEventListener('click',async()=>{
+  if(!STORE||!await ask({title:'Recuperar fichas deste navegador?',text:'Isso copia para a sua conta local as fichas antigas deste aparelho, anteriores ao login. Faça isso apenas se elas forem suas.'}))return;
+  try{const old=JSON.parse(localStorage.getItem('atsu.jogadores.v1')||'null');if(!old?.characters){toast('Nenhuma ficha anterior encontrada neste navegador.');return}
+   let count=0;for(const raw of Object.values(old.characters)){const c=normalizeImported({format:'ATSU-personagem-1',character:raw});c.id='recuperado_'+crypto.randomUUID();state.characters[c.id]=c;state.selected=c.id;count++}renderAll();toast(`${count} ficha(s) recuperada(s). Salve online para abrir em outro aparelho.`)
+  }catch{toast('Não foi possível recuperar. Você pode importar um arquivo JSON exportado.')}
+ });
 });
 })();

@@ -1,7 +1,8 @@
 # Ativar fichas online
 
 O site continua no GitHub Pages. O Supabase fornece login por e-mail e banco de
-dados. Sem essa configuração, as fichas continuam funcionando localmente.
+dados. A tela inicial de login exige uma sessão válida antes de abrir as fichas.
+Sem configuração, a entrada fica bloqueada com uma mensagem.
 
 1. Crie um projeto em https://supabase.com e execute `schema.sql` no SQL Editor.
    A política RLS permite que cada conta consulte e altere apenas suas fichas.
@@ -32,7 +33,8 @@ dados. Sem essa configuração, as fichas continuam funcionando localmente.
 ## Fluxo do jogador
 
 No primeiro acesso, preencha e-mail e senha (pelo menos 8 caracteres) e clique
-em **Criar conta**. Nos próximos acessos, use **Entrar**. Escolha uma ficha local e use
+na aba **Criar conta**, repita a senha e envie o cadastro. Nos próximos acessos,
+use **Entrar**. Escolha uma ficha local e use
 **Salvar ficha atual como nova ficha online**. Esse envio é explícito e inclui
 diário e anotações privadas; a sala MQTT continua recebendo apenas o resumo.
 Em outro aparelho, entre com o mesmo e-mail e abra a ficha da lista. Depois de
@@ -57,3 +59,21 @@ de desenvolvimento, sem dependências adicionadas ao aplicativo. Simula a API
 para testar login, envio, leitura em outro navegador, salvamento, conflito,
 falha de rede e saída. Não envia e-mails nem acessa um banco real. Testa cadastro, senha incorreta e
 cadastro que ainda exige confirmação, além do fluxo de fichas.
+
+## Tela de entrada e dados locais
+
+A página das fichas começa oculta, inclusive antes de executar JavaScript. O
+login e o cadastro usam a API do Supabase; ao recarregar, a sessão armazenada é
+validada em `/auth/v1/user`, com renovação do token quando necessário. Sessões
+inválidas não abrem a página inicial. Sair da conta volta à entrada e desconecta
+a sala MQTT. Links de sala só são processados depois do login.
+
+As fichas e preferências locais são separadas pelo ID da conta. Os dados antigos
+da versão sem login são preservados na chave original: depois de entrar, use
+**Recuperar fichas locais anteriores** apenas se essas fichas do aparelho forem
+suas. A recuperação copia as fichas para o espaço local da conta atual, sem
+enviá-las automaticamente ao banco nem apagar os originais.
+
+O conteúdo estático do GitHub Pages continua público. A tela de entrada organiza
+o acesso à interface; o controle de acesso aos dados online é aplicado pelas
+políticas RLS do Supabase, que precisam estar instaladas conforme `schema.sql`.

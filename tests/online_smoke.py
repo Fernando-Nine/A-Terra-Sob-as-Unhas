@@ -23,22 +23,29 @@ def api(route):
         return
     if '/auth/v1/signup' in request.url or '/auth/v1/token' in request.url:
         if 'grant_type=refresh_token' not in request.url:
-            assert request.post_data_json['email'] == 'a@example.com'
+            assert request.post_data_json['email'] in ['a@example.com','b@example.com']
             if request.post_data_json['password'] != 'test-password-123':
                 route.fulfill(status=400, json={'code': 'invalid_credentials'})
                 return
         if '/signup' in request.url and confirmation_required:
             route.fulfill(json={'user': {'id': 'unconfirmed'}})
             return
-        route.fulfill(json={'access_token': 'test-session', 'refresh_token': 'test-refresh',
-                            'expires_in': 3600, 'user': {'id': 'owner-a', 'email': 'a@example.com'}})
+        other=request.post_data_json.get('email') == 'b@example.com'
+        route.fulfill(json={'access_token': 'test-session-b' if other else 'test-session', 'refresh_token': 'test-refresh',
+                            'expires_in': 3600, 'user': {'id': 'owner-b' if other else 'owner-a', 'email': 'b@example.com' if other else 'a@example.com'}})
+    elif '/auth/v1/user' in request.url:
+        if request.headers.get('authorization') in ['Bearer test-session','Bearer test-session-b']:
+            other=request.headers['authorization'].endswith('-b')
+            route.fulfill(json={'id': 'owner-b' if other else 'owner-a', 'email': 'b@example.com' if other else 'a@example.com'})
+        else:
+            route.fulfill(status=401, json={'code': 'bad_jwt'})
     elif '/auth/v1/logout' in request.url:
         route.fulfill(status=204)
     elif '/rest/v1/fichas' in request.url:
         from urllib.parse import parse_qs, urlsplit
         query = parse_qs(urlsplit(request.url).query)
         if request.method == 'POST':
-            row = {**request.post_data_json, 'revision': 1}
+            row = {**request.post_data_json, 'revision': 1, 'owner_id':'owner-b' if request.headers['authorization'].endswith('-b') else 'owner-a'}
             rows[row['id']] = row
             route.fulfill(json=[row])
         elif request.method == 'PATCH':
@@ -50,7 +57,8 @@ def api(route):
                 route.fulfill(json=[row])
         else:
             selected = [rows[query['id'][0][3:]]] if 'id' in query else list(rows.values())
-            route.fulfill(json=copy.deepcopy(selected))
+            owner='owner-b' if request.headers['authorization'].endswith('-b') else 'owner-a'
+            route.fulfill(json=copy.deepcopy([row for row in selected if row['owner_id']==owner]))
     else:
         raise AssertionError(request.url)
 
@@ -64,14 +72,18 @@ def open_page(browser, configured=True):
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.goto('https://atsu.test/site/')
-    page.wait_for_selector('#charName')
+    page.wait_for_selector('#authScreen')
+    assert page.locator('#appScreen').is_hidden()
     return context, page, errors
 
 
-def login(page, signup=False):
-    page.fill('#onlineEmail', 'a@example.com')
+def login(page, signup=False, email='a@example.com'):
+    page.fill('#onlineEmail', email)
     page.fill('#onlinePassword', 'test-password-123')
-    page.click('#onlineSignup' if signup else '#onlineSignin')
+    page.click('#authModeSignup' if signup else '#authModeLogin')
+    if signup:
+        page.fill('#authConfirmPassword', 'test-password-123')
+    page.click('#authSubmit')
     page.wait_for_selector('#onlineUpload')
     assert page.locator('#onlinePassword').input_value() == ''
     assert 'test-password-123' not in page.evaluate('JSON.stringify(sessionStorage)')
@@ -85,10 +97,8 @@ def confirm(page):
 with sync_playwright() as playwright:
     browser = playwright.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
     local, page, errors = open_page(browser, configured=False)
-    assert page.locator('#onlineLogin').is_hidden()
-    page.get_by_role('button', name='Aumentar Eloquência', exact=True).click()
-    page.reload()
-    assert page.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1')).characters.bispo.skills.eloquencia") == 1
+    assert page.locator('#authSubmit').is_disabled()
+    assert page.locator('#appScreen').is_hidden()
     assert not errors
     local.close()
 
@@ -96,14 +106,16 @@ with sync_playwright() as playwright:
     # Both invalid credentials and unconfirmed signup must leave the visitor signed out.
     a.fill('#onlineEmail', 'a@example.com')
     a.fill('#onlinePassword', 'wrong-password')
-    a.click('#onlineSignin')
-    a.wait_for_function("document.getElementById('onlineStatus').textContent.includes('incorretos')")
-    assert a.locator('#onlineAccount').is_hidden()
+    a.click('#authSubmit')
+    a.wait_for_function("document.getElementById('authStatus').textContent.includes('incorretos')")
+    assert a.locator('#appScreen').is_hidden()
     confirmation_required = True
     a.fill('#onlinePassword', 'test-password-123')
-    a.click('#onlineSignup')
-    a.wait_for_function("document.getElementById('onlineStatus').textContent.includes('Confirm email')")
-    assert a.locator('#onlineAccount').is_hidden()
+    a.click('#authModeSignup')
+    a.fill('#authConfirmPassword', 'test-password-123')
+    a.click('#authSubmit')
+    a.wait_for_function("document.getElementById('authStatus').textContent.includes('Confirm email')")
+    assert a.locator('#appScreen').is_hidden()
     assert not a.evaluate("sessionStorage.getItem('atsu.auth')")
     confirmation_required = False
     login(a, signup=True)
@@ -122,7 +134,7 @@ with sync_playwright() as playwright:
     b.locator('#onlineSheets button').click()
     confirm(b)
     b.wait_for_function("document.getElementById('onlineStatus').textContent.startsWith('Ficha online aberta')")
-    assert b.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1')).characters[JSON.parse(localStorage.getItem('atsu.jogadores.v1')).selected].skills.eloquencia") == 1
+    assert b.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).characters[JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).selected].skills.eloquencia") == 1
     b.get_by_role('button', name='Aumentar Eloquência', exact=True).click()
     b.wait_for_timeout(1000)
     assert saved['character']['skills']['eloquencia'] == 2
@@ -140,13 +152,51 @@ with sync_playwright() as playwright:
     b.wait_for_function("document.getElementById('onlineStatus').textContent === '● Ficha salva online'")
     assert saved['character']['skills']['forca'] == 1
     b.click('#onlineLogout')
-    b.wait_for_selector('#onlineSignin')
+    b.wait_for_selector('#authSubmit')
+    assert b.locator('#appScreen').is_hidden()
     count = len([call for call in calls if call[0] == 'PATCH'])
-    b.get_by_role('button', name='Aumentar Força', exact=True).click()
     b.wait_for_timeout(1000)
     assert len([call for call in calls if call[0] == 'PATCH']) == count
+    login(b, email='b@example.com')
+    b.wait_for_timeout(200)
+    assert b.locator('#onlineSheets button').count()==0
+    assert b.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-b')).characters.bispo.skills.eloquencia")==0
+    assert b.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).characters[JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).selected].skills.eloquencia")==2
+    b.click('#onlineLogout')
+    b.wait_for_selector('#authSubmit')
     b.set_viewport_size({'width': 390, 'height': 844})
     assert b.evaluate('document.documentElement.scrollWidth <= innerWidth')
     assert not errors_a + errors_b, errors_a + errors_b
+    # Valid session restoration, refresh and rejection of a forged stored session.
+    a.reload()
+    a.wait_for_selector('#appScreen:not([hidden])')
+    assert a.locator('#authScreen').is_hidden()
+    a.evaluate("const s=JSON.parse(sessionStorage.getItem('atsu.auth'));s.expires_at=0;sessionStorage.setItem('atsu.auth',JSON.stringify(s))")
+    a.reload()
+    a.wait_for_selector('#appScreen:not([hidden])')
+    assert any('grant_type=refresh_token' in call[1] for call in calls)
+    a.evaluate("const s=JSON.parse(sessionStorage.getItem('atsu.auth'));s.access_token='forged';sessionStorage.setItem('atsu.auth',JSON.stringify(s))")
+    a.reload()
+    a.wait_for_function("document.getElementById('authStatus').textContent.includes('sessão') && !sessionStorage.getItem('atsu.auth')")
+    assert a.locator('#appScreen').is_hidden()
+    # A new account's local namespace cannot read the preceding account's sheet.
+    assert a.evaluate("localStorage.getItem('atsu.jogadores.v1.owner-a')")
+    # Signup password mismatch never reaches the backend.
+    a.click('#authModeSignup')
+    a.fill('#onlineEmail', 'a@example.com')
+    a.fill('#onlinePassword', 'test-password-123')
+    a.fill('#authConfirmPassword', 'different-password')
+    before=len(calls)
+    a.click('#authSubmit')
+    a.wait_for_function("document.getElementById('authStatus').textContent.includes('não coincidem')")
+    assert len(calls)==before
+    a.click('#authModeLogin')
+    a.fill('#onlineEmail', '')
+    a.fill('#onlinePassword', '')
+    a.set_viewport_size({'width':390,'height':844})
+    a.screenshot(path='/tmp/atsu-auth-mobile.png', full_page=True)
+    a.set_viewport_size({'width':1440,'height':1000})
+    a.screenshot(path='/tmp/atsu-auth-desktop.png', full_page=True)
+    assert not errors_a + errors_b, errors_a + errors_b
     browser.close()
-print('PASS: offline, password signup/login, invalid password, confirmation required, upload, second browser load, autosave, conflicts, network retry, logout, mobile')
+print('PASS: login gate, session validation/refresh, account isolation, password signup/login, invalid password, confirmation required, upload, second browser load, autosave, conflicts, network retry, logout, mobile')
