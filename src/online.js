@@ -28,7 +28,7 @@ window.ATSUOnline = (() => {
    else{clearTimeout(renewal);renewal=setTimeout(restore,Math.max(1000,session.expires_at*1000-Date.now()-45000))}
   }catch(e){if(version===generation)lock('Não foi possível validar sua sessão. Entre novamente.');}
  }
- async function request(path,body,method='POST',authenticated=false,extra={}){
+ async function request(path,body,method='POST',authenticated=false,extra={},format='json'){
   if(authenticated){
    if(!session)throw Error('Entre novamente para salvar.');
    if(session.expires_at*1000<Date.now()+60000){
@@ -37,7 +37,7 @@ window.ATSUOnline = (() => {
    }
   }
   let response;
-  try{response=await fetch(base+path,{method,headers:{apikey:config.key,'Content-Type':'application/json',...(authenticated?{Authorization:'Bearer '+session.access_token}:{}),...extra},...(body===undefined?{}:{body:JSON.stringify(body)})});}
+  try{response=await fetch(base+path,{method,headers:{apikey:config.key,'Content-Type':'application/json',...(authenticated?{Authorization:'Bearer '+session.access_token}:{}),...extra},...(body===undefined?{}:{body:body instanceof Blob?body:JSON.stringify(body)})});}
   catch{throw Error('Não foi possível conectar. Verifique sua conexão e tente novamente.');}
   if(!response.ok){
    const error=await response.json().catch(()=>({}));
@@ -55,13 +55,13 @@ window.ATSUOnline = (() => {
    if(reason==='email_address_not_authorized'||/error sending confirmation email/i.test(message))throw Error('O Supabase tentou enviar uma confirmação de e-mail, mas o envio não está disponível. Para este site, desative Confirm email e salve a configuração.');
    if(reason==='over_email_send_rate_limit')throw Error('O Supabase ainda está tentando enviar e-mails e atingiu o limite. O responsável precisa revisar Confirm email; aguarde antes de tentar de novo.');
    if(/invalid api key/i.test(message))throw Error('A chave pública do site não foi aceita pelo Supabase. O responsável precisa conferir a chave e a URL do mesmo projeto.');
-   if(reason==='PGRST205')throw Error('O banco de fichas ainda não foi preparado. O responsável precisa executar o script de criação da tabela no Supabase.');
+   if(reason==='PGRST205'||reason==='PGRST202')throw Error(path.includes('sala')?'As salas ainda não foram ativadas. O responsável precisa executar supabase/rooms.sql no SQL Editor do Supabase.':'O banco de fichas ainda não foi preparado. O responsável precisa executar o script de criação da tabela no Supabase.');
    if(response.status===429)throw Error('Muitas tentativas. Aguarde antes de tentar novamente.');
    // O motivo é exibido como texto, nunca interpretado como HTML.
    const code=/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(reason)?' / '+reason:'';
    throw Error(`O serviço recusou a solicitação (HTTP ${response.status}${code}). ${message||'Não foi informado um motivo. Avise o responsável pelo site.'}`);
   }
-  return response.status===204?null:response.json();
+  return response.status===204?null:format==='blob'?response.blob():response.json();
  }
  function account(){
   $('onlineLogin').hidden=!!session;$('onlineAccount').hidden=!session;
@@ -137,6 +137,20 @@ window.ATSUOnline = (() => {
   });
   $('onlineRefresh').onclick=()=>run(list);
   $('onlineRetry').onclick=save;
+  $('clearAllSheets').onclick=()=>run(async()=>{
+   if(!session||!await app.confirm('Limpar todas as suas fichas?', 'As fichas locais e online desta conta serão removidas. Um backup JSON será baixado antes. As fichas das outras contas não serão alteradas.'))return;
+   const version=generation,user=session.user.id;
+   const rows=await request('/rest/v1/fichas?select=*',undefined,'GET',true);
+   if(version!==generation)return;
+   const backup={format:'ATSU-backup-1',exported:new Date().toISOString(),local:app.localBackup(),online:rows};
+   // Se não for possível guardar o backup local, não apague as fichas.
+   try{localStorage.setItem('atsu.backup.limpeza.'+user+'.'+Date.now(),JSON.stringify(backup))}catch{throw Error('Não foi possível guardar o backup. A limpeza foi cancelada.');}
+   const url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='Backup_fichas_'+new Date().toISOString().slice(0,10)+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+   // Exclua somente os IDs inspecionados, sem apagar fichas novas de outro aparelho.
+   bound=null;clearTimeout(timer);
+   for(const row of rows){if(version!==generation)return;await request('/rest/v1/fichas?id=eq.'+encodeURIComponent(row.id),undefined,'DELETE',true);}
+   if(version!==generation)return;app.clearLocal();await list();status('Todas as suas fichas foram removidas. O backup foi guardado neste navegador e baixado em JSON.');
+  });
   $('onlineUpload').onclick=()=>run(async()=>{
    if(!session||!app.current())return;
    if(!await app.confirm('Salvar esta ficha online?', 'A ficha completa, incluindo diário e anotações, será armazenada na sua conta.'))return;
@@ -147,5 +161,5 @@ window.ATSUOnline = (() => {
    status('● Ficha salva online');await list();if(bound)changed();
   });
  }
- return {start,changed};
+ return {start,changed,api:(path,body,method='POST',headers={},format='json')=>request(path,body,method,true,headers,format)};
 })();

@@ -45,10 +45,15 @@ def api(route):
             route.fulfill(status=401, json={'code': 'bad_jwt'})
     elif '/auth/v1/logout' in request.url:
         route.fulfill(status=204)
+    elif '/rest/v1/salas' in request.url:
+        route.fulfill(json=[])
     elif '/rest/v1/fichas' in request.url:
         from urllib.parse import parse_qs, urlsplit
         query = parse_qs(urlsplit(request.url).query)
-        if request.method == 'POST':
+        if request.method == 'DELETE':
+            rows.pop(query['id'][0][3:], None)
+            route.fulfill(status=204)
+        elif request.method == 'POST':
             row = {**request.post_data_json, 'revision': 1, 'owner_id':'owner-b' if request.headers['authorization'].endswith('-b') else 'owner-a'}
             rows[row['id']] = row
             route.fulfill(json=[row])
@@ -105,6 +110,12 @@ def login(page, signup=False, email='a@example.com'):
     page.locator('#view-inicio .home-actions [data-tab=ficha]').click()
     page.wait_for_selector('#onlineUpload')
     page.set_viewport_size({'width':1280,'height':900})
+    if not page.locator('#charName').count():
+        assert page.locator('#picker button').count()==0
+        page.click('#addChar')
+        page.fill('#askInput','Investigador de teste')
+        page.click('#askOk')
+        page.wait_for_selector('#charName')
     assert page.locator('#onlinePassword').input_value() == ''
     assert 'test-password-123' not in page.evaluate('JSON.stringify(sessionStorage)')
 
@@ -205,7 +216,7 @@ with sync_playwright() as playwright:
     login(b, email='b@example.com')
     b.wait_for_timeout(200)
     assert b.locator('#onlineSheets button').count()==0
-    assert b.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-b')).characters.bispo.skills.eloquencia")==0
+    assert b.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-b')).characters[JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-b')).selected].skills.eloquencia")==0
     assert b.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).characters[JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).selected].skills.eloquencia")==2
     b.click('#onlineLogout')
     b.wait_for_selector('#authSubmit')

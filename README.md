@@ -10,7 +10,7 @@ no navegador, no computador ou no celular, com acesso por e-mail e senha e sem i
 - Entre na sua conta (ou use **Criar conta** no primeiro acesso).
 - A página **Início** apresenta o sistema. Use as categorias no topo para abrir
   **Fichas**, **Dados**, **Mesa**, **Diário** ou **Como jogar**.
-- Escolha seu investigador (Bispo, Wiiz, Goudl ou Nine) ou crie um novo.
+- A seção Fichas começa vazia: crie seu investigador ou importe um arquivo.
 - Distribua seus **10 PP** entre as sete habilidades: Eloquência, Força, Medicina, Ocultismo,
   Psicologia, Visão e Investigação. Subir do nível *n* para *n+1* custa *n+1* PP.
 - Para testar, role **2D6 + nível da habilidade + modificador do Mestre** contra 9 (normal),
@@ -21,16 +21,28 @@ no navegador, no computador ou no celular, com acesso por e-mail e senha e sem i
   pode ser ajustado).
 - O diário guarda pistas, equipamentos e anotações.
 
-## Mesa (sala ao vivo)
+## Mesa e documentos
 
-1. O Mestre cria a sala no escudo e passa o link (ou o código).
-2. Você abre o link, ou digita o código na aba **Mesa**, e toca no seu investigador.
-3. A mesa passa a ver seu nome, Vida, Sanidade, Raiz, níveis e suas últimas rolagens, e você
-   vê os dos outros. **O diário e as anotações não são enviados à mesa.** Ao salvar online, a ficha completa fica na sua conta.
+1. O Mestre usa **Mesa → Criar como Mestre** e passa o código ou convite.
+2. Os jogadores entram com suas contas e usam **Compartilhar ficha atual**.
+3. Em **Painel da mesa**, todos veem os resumos das fichas e as rolagens públicas.
+   Diário e anotações privadas não entram no resumo.
+4. O criador da sala tem **Dados privados do Mestre**. Esses resultados ficam
+   apenas no navegador dele e nunca são enviados à sala ou ao banco.
+5. Em **Documentos e mural**, os participantes criam notas e enviam imagens ou
+   PDFs de até 10 MB. Cartões podem ser arrastados ou movidos com as setas.
 
-A sala é opcional. Não há senha: quem souber o código vê esses dados. As mensagens passam por
-um servidor público e gratuito (broker.emqx.io); rolagens com mais de 6 horas somem da mesa.
-**Sair da sala** retira sua ficha da mesa.
+As salas e os documentos usam Supabase e exigem executar
+[`supabase/rooms.sql`](supabase/rooms.sql) uma vez no SQL Editor. O convite permite
+que uma pessoa autenticada entre na sala. Somente os participantes acessam os
+resumos, rolagens públicas e arquivos. A atualização acontece a cada 4 segundos.
+A sala antiga por MQTT não é usada pela nova interface; seu transporte permanece
+no repositório para compatibilidade com o escudo local anterior.
+
+**Limpar todas as minhas fichas**, na seção Fichas, baixa um backup JSON e guarda
+uma cópia local antes de excluir as fichas locais e online da conta conectada.
+O backup pode ser restaurado em **Importar ficha**. As contas de outros jogadores
+não são afetadas. As fichas de exemplo deixaram de ser criadas automaticamente.
 
 **Por padrão, a ficha fica salva no navegador que você usou.** Com o salvamento online
 ativado, entre na sua conta e abra a ficha em outro aparelho. Você também pode usar

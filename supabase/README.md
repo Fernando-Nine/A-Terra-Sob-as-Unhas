@@ -36,7 +36,7 @@ No primeiro acesso, preencha e-mail e senha (pelo menos 8 caracteres) e clique
 na aba **Criar conta**, repita a senha e envie o cadastro. Nos próximos acessos,
 use **Entrar**. Escolha uma ficha local e use
 **Salvar ficha atual como nova ficha online**. Esse envio é explícito e inclui
-diário e anotações privadas; a sala MQTT continua recebendo apenas o resumo.
+diário e anotações privadas; a sala recebe apenas o resumo que o jogador escolheu compartilhar.
 Em outro aparelho, entre com o mesmo e-mail e abra a ficha da lista. Depois de
 aberta, as alterações são enviadas automaticamente. Após recarregar o site,
 abra a ficha da lista novamente para retomar o vínculo com a versão online.
@@ -68,8 +68,7 @@ superior alternam entre Início, Fichas, Dados, Mesa, Diário e Como jogar.
 Os controles de salvamento online ficam em Fichas. O
 login e o cadastro usam a API do Supabase; ao recarregar, a sessão armazenada é
 validada em `/auth/v1/user`, com renovação do token quando necessário. Sessões
-inválidas não abrem a página inicial. Sair da conta volta à entrada e desconecta
-a sala MQTT. Links de sala só são processados depois do login.
+inválidas não abrem a página inicial. Sair da conta volta à entrada e encerra as atualizações da sala. Links de sala só são processados depois do login.
 
 As fichas e preferências locais são separadas pelo ID da conta. Os dados antigos
 da versão sem login são preservados na chave original: depois de entrar, use
@@ -80,3 +79,28 @@ enviá-las automaticamente ao banco nem apagar os originais.
 O conteúdo estático do GitHub Pages continua público. A tela de entrada organiza
 o acesso à interface; o controle de acesso aos dados online é aplicado pelas
 políticas RLS do Supabase, que precisam estar instaladas conforme `schema.sql`.
+
+## Ativar salas e mural
+
+Execute `supabase/rooms.sql` **uma única vez**, depois do schema básico, no SQL
+Editor do projeto. O script é transacional, cria tabelas novas e um bucket
+**privado** `mesa-documentos` (10 MB, PNG/JPEG/WebP/PDF). Não altera nem apaga as
+fichas atuais. Não torne esse bucket público. Não é necessário habilitar Realtime:
+a interface consulta as atualizações a cada 4 segundos.
+
+A conta que cria a sala é o Mestre; esse papel fica fixado no banco. Os demais
+entram por convite, com associação registrada pelo RPC `entrar_sala`. Os membros
+podem consultar os resumos/rolagens/documentos da sala e editar ou mover cartões.
+Só o autor do cartão ou o Mestre pode removê-lo. Todos os resultados do Mestre
+na seção privada ficam apenas em sessionStorage, separados por conta e sala,
+e são perdidos quando a aba é fechada. Eles nunca são enviados via API.
+
+Os limites do plano Supabase para banco e Storage continuam aplicáveis. O mural
+é um quadro de notas, imagens e PDFs, sem edição de imagens ou páginas PDF.
+As salas novas não sincronizam com a versão antiga do escudo local por MQTT.
+
+A limpeza de fichas exige a sessão da própria conta no navegador: a chave pública
+não permite apagar dados de outra pessoa. O botão **Limpar todas as minhas fichas**
+salva e baixa o backup antes de excluir os IDs encontrados. Em falha parcial,
+o backup permanece e a limpeza pode ser tentada novamente. Arquivos antigos de
+backup e o armazenamento legado anterior às contas são preservados.
