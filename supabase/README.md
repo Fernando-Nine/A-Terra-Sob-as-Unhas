@@ -117,3 +117,16 @@ autorização da sessão, como o cliente oficial do Supabase. O bucket permanece
 privado. Falhas de leitura aparecem no cartão com a mensagem recebida, sem
 apagar o arquivo. Imagens podem ser ampliadas e PDFs usam o visualizador nativo
 do navegador; o download permanece disponível caso o navegador não os exiba.
+
+### Correção de uploads com retorno mínimo
+
+PostgREST normalmente confirma INSERT com HTTP 201 e corpo vazio. O cliente
+agora aceita essa resposta e não confunde o sucesso com uma falha ao ler JSON.
+Se a confirmação do cadastro do cartão for perdida, o cliente consulta o banco
+antes de remover qualquer upload: um cartão já salvo preserva seu arquivo.
+
+Arquivos apagados pela versão anterior podem deixar cartões com `NoSuchKey` /
+`Object not found`. O autor ou o Mestre pode usar **Reenviar arquivo**, selecionar
+o original novamente e restaurar o mesmo caminho, sem mudar título, texto ou
+posição do cartão. Essa ação não sobrescreve um arquivo que já existe. Não é
+necessário executar SQL novamente para esta correção.

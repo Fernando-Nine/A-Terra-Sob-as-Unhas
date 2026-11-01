@@ -1,7 +1,7 @@
 // Salas autenticadas: o banco aplica as permissões; dados privados nunca saem daqui.
 window.ATSUMesa=(()=>{'use strict';
 let app=null,sala=null,epoch=0,poll=null,shareTimer=null,shareId='',lastSheet='',syncing=false,dragging=false,docs=[],privateRolls=[];
-const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),uuid=s=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(s),assets=new Map(),loadingAssets=new Map();let previewURL='';
+const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),uuid=s=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(s),assets=new Map(),loadingAssets=new Map();let previewURL='',restoreCard=null;
 const message=(s,bad=false)=>{$('mesaStatus').textContent=s;$('mesaStatus').className=bad?'note mesa-error':'hint'};
 const master=()=>sala&&sala.mestre_id===app?.user.id;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
@@ -99,7 +99,7 @@ function renderBoard(){
   }
 
   if(card.texto)node.append(el('p',card.texto,'board-body'));
-  const actions=el('div',undefined,'actions');if(card.caminho)actions.append(button('Visualizar',()=>preview(card)),button('Baixar arquivo',()=>openFile(card)));
+  const actions=el('div',undefined,'actions');if(card.caminho){actions.append(button('Visualizar',()=>preview(card)),button('Baixar arquivo',()=>openFile(card)));if(card.autor_id===app.user.id||master())actions.append(button('Reenviar arquivo',()=>{restoreCard=card;$('boardRestoreFile').click()}))}
   actions.append(button('Editar',async()=>{const title=await app.ask({title:'Título do cartão',input:card.titulo});if(!title)return;let texto=card.texto;if(card.tipo==='nota'){texto=await app.ask({title:'Texto da nota',input:card.texto,maxlength:10000});if(texto===null)return}await patch(card,{titulo:title.slice(0,100),texto})}));
   if(card.autor_id===app.user.id||master())actions.append(button('Remover',async()=>{if(!await app.ask({title:'Remover este cartão?',text:'O documento será removido da sala.'}))return;const target=epoch;if(card.caminho)await api('/storage/v1/object/mesa-documentos',{prefixes:[card.caminho]},'DELETE');await api('/rest/v1/sala_documentos?id=eq.'+card.id,undefined,'DELETE');if(target===epoch){document.activeElement.blur();await sync(true)}}));
   node.append(actions);root.append(node);
@@ -124,7 +124,15 @@ function start(adapter){
  $('privateClear').onclick=()=>{if(!master())return;privateRolls=[];try{sessionStorage.removeItem(privateKey())}catch{}renderPrivate()};
  $('boardNote').onsubmit=e=>{e.preventDefault();run(async()=>{if(!sala)return;await api('/rest/v1/sala_documentos',{id:crypto.randomUUID(),sala_id:sala.id,titulo:$('boardTitle').value.trim(),texto:$('boardText').value,tipo:'nota',x:20+(docs.length%4)*300,y:Math.min(1800,20+Math.floor(docs.length/4)*380)});$('boardNote').reset();await sync(true)})};
  $('boardRefresh').onclick=()=>run(()=>sync(true));
- $('boardFile').onchange=e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;run(async()=>{if(!sala)return;if(file.size>10*1024*1024)throw Error('O limite é 10 MB por arquivo.');const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp','application/pdf':'pdf'}[file.type];if(!ext)throw Error('Envie uma imagem PNG, JPEG, WebP ou um PDF.');const id=crypto.randomUUID(),target=sala.id,path=target+'/'+id+'.'+ext,version=epoch;message('Enviando arquivo…');await api('/storage/v1/object/mesa-documentos/'+path,file,'POST',{'Content-Type':file.type});if(version!==epoch){await api('/storage/v1/object/mesa-documentos',{prefixes:[path]},'DELETE');return}try{await api('/rest/v1/sala_documentos',{id,sala_id:target,titulo:file.name.slice(0,100),tipo:ext==='pdf'?'arquivo':'imagem',caminho:path,x:20+(docs.length%4)*300,y:Math.min(1800,20+Math.floor(docs.length/4)*380)})}catch(e){await api('/storage/v1/object/mesa-documentos',{prefixes:[path]},'DELETE');throw e}message('Arquivo adicionado à sala.');await sync(true)})};
+ $('boardRestoreFile').onchange=e=>{const file=e.target.files?.[0],card=restoreCard;e.target.value='';restoreCard=null;if(!file||!card||!sala||card.sala_id!==sala.id)return;run(async()=>{if(file.size>10*1024*1024)throw Error('O limite é 10 MB por arquivo.');const allowed=card.tipo==='arquivo'?['application/pdf']:['image/png','image/jpeg','image/webp'];if(!allowed.includes(file.type))throw Error(card.tipo==='arquivo'?'Selecione um PDF.':'Selecione uma imagem PNG, JPEG ou WebP.');if(!card.caminho.startsWith(sala.id+'/'+card.id+'.'))throw Error('Caminho do cartão inválido.');const version=epoch;message('Reenviando arquivo…');await api('/storage/v1/object/mesa-documentos/'+card.caminho.split('/').map(encodeURIComponent).join('/'),file,'POST',{'Content-Type':file.type});if(version!==epoch)return;if(assets.has(card.id)){URL.revokeObjectURL(assets.get(card.id));assets.delete(card.id)}message('Arquivo restaurado. O cartão e sua posição foram preservados.');await sync(true)})};
+ $('boardFile').onchange=e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;run(async()=>{if(!sala)return;if(file.size>10*1024*1024)throw Error('O limite é 10 MB por arquivo.');const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp','application/pdf':'pdf'}[file.type];if(!ext)throw Error('Envie uma imagem PNG, JPEG, WebP ou um PDF.');const id=crypto.randomUUID(),target=sala.id,path=target+'/'+id+'.'+ext,version=epoch;message('Enviando arquivo…');await api('/storage/v1/object/mesa-documentos/'+path,file,'POST',{'Content-Type':file.type});if(version!==epoch){await api('/storage/v1/object/mesa-documentos',{prefixes:[path]},'DELETE');return}try{await api('/rest/v1/sala_documentos',{id,sala_id:target,titulo:file.name.slice(0,100),tipo:ext==='pdf'?'arquivo':'imagem',caminho:path,x:20+(docs.length%4)*300,y:Math.min(1800,20+Math.floor(docs.length/4)*380)})}catch(e){
+ // Uma resposta perdida não prova que o cadastro falhou. Confirme antes de apagar.
+ if(version!==epoch)throw e;
+ let rows=null;try{rows=await api('/rest/v1/sala_documentos?id=eq.'+id+'&select=id',undefined,'GET')}catch{}
+ if(version!==epoch)throw e;
+ if(!rows)throw Error('O arquivo foi enviado, mas não foi possível confirmar o cartão. Ele foi mantido; atualize o mural antes de tentar novamente.');
+ if(!rows.length){await api('/storage/v1/object/mesa-documentos',{prefixes:[path]},'DELETE');throw e}
+ }message('Arquivo adicionado à sala.');await sync(true)})};
  run(async()=>{await rooms();let id='';try{id=localStorage.getItem(roomKey())||''}catch{}const code=new URLSearchParams(location.search).get('sala');if(code){await join(code);app.selectMesa()}else if(uuid(id)){const list=await api('/rest/v1/salas?id=eq.'+id+'&select=*',undefined,'GET');if(list.length)await enter(list[0])}});
 }
 return {start,stop,changed,roll,share};

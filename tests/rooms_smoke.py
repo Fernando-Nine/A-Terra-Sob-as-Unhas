@@ -32,10 +32,10 @@ def api(route):
   elif r.method=='PATCH':members[user].update(body);route.fulfill(status=204)
   elif r.method=='DELETE':members.pop(user,None);route.fulfill(status=204)
  elif path=='/rest/v1/sala_rolagens':
-  if r.method=='POST':rolls.append({**body,'user_id':user,'total':body['a']+body['b']+body['nivel']+body['modificador']});route.fulfill(status=201,json={})
+  if r.method=='POST':rolls.append({**body,'user_id':user,'total':body['a']+body['b']+body['nivel']+body['modificador']});route.fulfill(status=201,body='')
   else:route.fulfill(json=copy.deepcopy(rolls))
  elif path=='/rest/v1/sala_documentos':
-  if r.method=='POST':card={**body,'autor_id':user,'revisao':1,'x':body.get('x',20),'y':body.get('y',20),'texto':body.get('texto','')};cards[card['id']]=card;route.fulfill(json=[card])
+  if r.method=='POST':card={**body,'autor_id':user,'revisao':1,'x':body.get('x',20),'y':body.get('y',20),'texto':body.get('texto','')};cards[card['id']]=card;route.fulfill(status=201,body='')
   elif r.method=='GET':route.fulfill(json=copy.deepcopy(list(cards.values())))
   elif r.method=='DELETE':cards.pop(q['id'][0][3:],None);route.fulfill(status=204)
   elif r.method=='PATCH':
@@ -49,6 +49,7 @@ def api(route):
   elif r.method=='DELETE':
    for key in body['prefixes']:files.pop(key,None)
    route.fulfill(json=[])
+  elif path.split('mesa-documentos/')[1] not in files:route.fulfill(status=400,json={'statusCode':'404','error':'NoSuchKey','message':'Object not found'})
   else:route.fulfill(content_type='application/pdf' if path.endswith('.pdf') else 'image/png',body=files[path.split('mesa-documentos/')[1]])
  else:raise AssertionError((r.method,path))
 def page(browser,email):
@@ -63,7 +64,7 @@ with sync_playwright() as pw:
  p.locator('.app-nav [data-tab=dados]').click();p.click('#rollBtn');m.wait_for_function("document.getElementById('mesaRolls').textContent.includes('Jogador de teste')");assert len(rolls)==1
  before=len(rolls);m.locator('#privateRollForm button[type=submit]').click();m.wait_for_selector('#privateHistory .hist');assert len(rolls)==before
  assert not any('privada' in path or 'segredo' in json.dumps(body) for _,path,body in sent if body)
- m.locator('[data-room-view=documentos]').click();m.fill('#boardTitle','Pista compartilhada');m.fill('#boardText','Texto que todos da sala podem editar');m.locator('#boardNote button').click();m.wait_for_selector('.board-card')
+ m.locator('[data-room-view=documentos]').click();m.fill('#boardTitle','Pista compartilhada');m.fill('#boardText','Texto que todos da sala podem editar');m.locator('#boardNote button').click();m.wait_for_selector('.board-card');assert m.locator('#boardTitle').input_value()==''
  p.locator('.app-nav [data-tab=mesa]').click();p.locator('[data-room-view=documentos]').click();p.wait_for_selector('.board-card');handle=p.locator('.board-handle');handle.focus();handle.press('ArrowRight');p.wait_for_timeout(500);assert next(iter(cards.values()))['x']==40
  m.click('#boardRefresh');m.wait_for_function("document.querySelector('.board-card').style.left==='40px'")
  # Arrastar pelo mouse também persiste a posição.
@@ -79,6 +80,15 @@ with sync_playwright() as pw:
  p.locator('.board-card',has_text='imagem.png').get_by_role('button',name='Tentar carregar novamente').click();p.wait_for_function("document.querySelector('.board-card img')?.naturalWidth===1")
  p.locator('.board-card',has_text='imagem.png').get_by_role('button',name='Visualizar',exact=True).click();p.wait_for_function("document.querySelector('#documentContent img')?.naturalWidth===1");p.click('#documentClose')
  p.locator('.board-card',has_text='documento.pdf').get_by_role('button',name='Visualizar',exact=True).click();p.wait_for_selector('#documentContent object');assert p.locator('#documentContent object').get_attribute('data').startswith('blob:');p.click('#documentClose')
+ # Reproduza um arquivo perdido, sem apagar o cartão; sair da sala preserva os documentos.
+ image_card=next(c for c in cards.values() if c['tipo']=='imagem');original_position=(image_card['x'],image_card['y']);lost_path=image_card['caminho'];files.pop(lost_path)
+ p.click('#mesaExit');p.wait_for_selector('#mesaLobby:not([hidden])');assert len(cards)==3
+ p.fill('#mesaCode','ABCDEF123456');p.locator('#mesaJoin button').click();p.wait_for_selector('#mesaInside:not([hidden])');p.locator('[data-room-view=documentos]').click()
+ p.wait_for_function("document.getElementById('boardCanvas').textContent.includes('Object not found')")
+ with p.expect_file_chooser() as chooser:p.locator('.board-card',has_text='imagem.png').get_by_role('button',name='Reenviar arquivo',exact=True).click()
+ chooser.value.set_files({'name':'imagem.png','mimeType':'image/png','buffer':png})
+ p.wait_for_function("document.querySelector('.board-card img')?.naturalWidth===1")
+ assert files[lost_path]==png and len(cards)==3 and (image_card['x'],image_card['y'])==original_position
  assert p.locator('.board-card',has_text='Título editado').locator('button',has_text='Remover').count()==0
  p.locator('.board-card',has_text='documento.pdf').locator('button',has_text='Remover').click();p.wait_for_selector('#askDialog[open]');p.click('#askOk');p.wait_for_timeout(500);assert len(files)==1
  # Limpeza de fichas exige backup antes da exclusão e deixa a conta vazia.
@@ -92,4 +102,4 @@ with sync_playwright() as pw:
  p.locator('.app-nav [data-tab=mesa]').click();p.locator('[data-room-view=documentos]').click();p.set_viewport_size({'width':390,'height':844});assert p.evaluate('document.documentElement.scrollWidth<=innerWidth');p.screenshot(path='/tmp/atsu-board-mobile.png',full_page=True)
  assert not errors,errors
  browser.close()
-print('PASS: criar/entrar, fichas e dados públicos, dados privados sem publicação, notas compartilhadas, teclado/arraste, upload/download, prévias imagem/PDF, falha e repetição de leitura, limpeza com backup/restauração, mobile')
+print('PASS: criar/entrar, fichas e dados públicos, dados privados sem publicação, notas compartilhadas, teclado/arraste, upload/download, prévias imagem/PDF, HTTP 201 vazio sem apagar uploads, restauração de arquivo perdido, persistência ao sair, falha e repetição de leitura, limpeza com backup/restauração, mobile')

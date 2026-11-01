@@ -61,7 +61,12 @@ window.ATSUOnline = (() => {
    const code=/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(reason)?' / '+reason:'';
    throw Error(`O serviço recusou a solicitação (HTTP ${response.status}${code}). ${message||'Não foi informado um motivo. Avise o responsável pelo site.'}`);
   }
-  return response.status===204?null:format==='blob'?response.blob():response.json();
+  if(response.status===204||response.status===205)return null;
+  if(format==='blob')return response.blob();
+  // PostgREST confirma INSERT com 201 e corpo vazio por padrão.
+  const text=await response.text();
+  if(!text.trim())return null;
+  return JSON.parse(text);
  }
  function account(){
   $('onlineLogin').hidden=!!session;$('onlineAccount').hidden=!session;
