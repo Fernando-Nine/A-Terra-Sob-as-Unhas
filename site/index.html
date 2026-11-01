@@ -185,8 +185,17 @@ window.ATSUOnline = (() => {
    if(error.code==='invalid_credentials')throw Error('E-mail ou senha incorretos.');
    if(error.code==='user_already_exists')throw Error('Não foi possível criar a conta. Se já tem cadastro, use Entrar.');
    if(error.code==='weak_password')throw Error('Escolha uma senha mais forte, conforme as regras do site.');
+   if(error.code==='signup_disabled')throw Error('O cadastro está desativado. O responsável precisa ativar Allow new users to sign up no Supabase.');
+   if(error.code==='email_provider_disabled')throw Error('O acesso por e-mail está desativado. O responsável precisa ativar o provedor Email no Supabase.');
+   if(error.code==='email_address_invalid')throw Error('Confira o endereço de e-mail informado.');
+   if(error.code==='email_address_not_authorized'||/error sending confirmation email/i.test(error.msg||error.message||''))throw Error('O Supabase tentou enviar uma confirmação de e-mail, mas o envio não está disponível. Para este site, desative Confirm email e salve a configuração.');
+   if(error.code==='over_email_send_rate_limit')throw Error('O Supabase ainda está tentando enviar e-mails e atingiu o limite. O responsável precisa revisar Confirm email; aguarde antes de tentar de novo.');
+   if(/invalid api key/i.test(error.message||''))throw Error('A chave pública do site não foi aceita pelo Supabase. O responsável precisa conferir a chave e a URL do mesmo projeto.');
+   if(error.code==='PGRST205')throw Error('O banco de fichas ainda não foi preparado. O responsável precisa executar o script de criação da tabela no Supabase.');
    if(response.status===429)throw Error('Muitas tentativas. Aguarde antes de tentar novamente.');
-   throw Error(response.status===401?'Sessão expirada. Entre novamente.':'Não foi possível concluir. Verifique sua conexão e tente novamente.');
+   // Mostre somente o identificador de diagnóstico, sem expor mensagens ou dados do servidor.
+   const code=/^[a-zA-Z0-9_-]{1,64}$/.test(error.code||'')?' / '+error.code:'';
+   throw Error(`O serviço recusou a solicitação (HTTP ${response.status}${code}). Informe esse código ao responsável pelo site.`);
   }
   return response.status===204?null:response.json();
  }

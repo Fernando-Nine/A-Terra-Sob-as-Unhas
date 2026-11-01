@@ -13,6 +13,7 @@ rows = {}
 calls = []
 failure = False
 confirmation_required = False
+auth_error = None
 
 
 def api(route):
@@ -22,6 +23,9 @@ def api(route):
         route.fulfill(status=503, json={'message': 'offline'})
         return
     if '/auth/v1/signup' in request.url or '/auth/v1/token' in request.url:
+        if auth_error:
+            route.fulfill(status=auth_error[0], json=auth_error[1])
+            return
         if 'grant_type=refresh_token' not in request.url:
             assert request.post_data_json['email'] in ['a@example.com','b@example.com']
             if request.post_data_json['password'] != 'test-password-123':
@@ -118,6 +122,19 @@ with sync_playwright() as playwright:
     assert a.locator('#appScreen').is_hidden()
     assert not a.evaluate("sessionStorage.getItem('atsu.auth')")
     confirmation_required = False
+    for http_status, payload, expected in [
+        (403, {'code':'signup_disabled'}, 'cadastro está desativado'),
+        (422, {'code':'email_provider_disabled'}, 'acesso por e-mail está desativado'),
+        (500, {'code':'unexpected_failure','msg':'Error sending confirmation email'}, 'desative Confirm email'),
+        (401, {'message':'Invalid API key'}, 'chave pública'),
+        (500, {'code':'unexpected_failure'}, 'HTTP 500 / unexpected_failure'),
+    ]:
+        auth_error=(http_status,payload)
+        a.click('#authSubmit')
+        a.wait_for_function("expected => document.getElementById('authStatus').textContent.includes(expected)",arg=expected)
+        assert a.locator('#appScreen').is_hidden()
+        assert a.locator('#authSubmit').is_enabled()
+    auth_error=None
     login(a, signup=True)
     a.click('#onlineUpload')
     confirm(a)
