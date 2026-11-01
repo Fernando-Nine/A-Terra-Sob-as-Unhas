@@ -385,9 +385,6 @@ html[data-motion=off] button, html[data-motion=off] .pick, html[data-motion=off]
 .orbit-lines { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #67c0ab40; stroke-width: .35; filter: drop-shadow(0 0 12px #67b9a52b); }
 .orbit-lines circle:first-child { stroke-width: 1; stroke: #4c9e8b25; }
 .orbit-lines path { stroke-width: .2; }
-.orbit-center { position: absolute; top: 46%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: #77bca697; pointer-events: none; }
-.orbit-center>span { display: block; font: 50px/1.3 Georgia,serif; text-shadow: 0 0 24px #60d2aa33; }
-.orbit-center small { display: block; font-size: 7px; letter-spacing: .2em; }
 .skill-node { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%,-50%)!important; display: flex; flex-direction: column; width: 100px; min-height: 96px; gap: 7px; padding: 0; border: 0; border-radius: 0; background: transparent; color: #c4d4c4; }
 .skill-node:not(:disabled):hover { background: transparent; box-shadow: none; color: #f2e5ff; }
 .skill-node-label { font: 12px/1.2 Georgia,serif; color: #c8d5c4; }
@@ -434,3 +431,26 @@ html[data-motion=on] .skill-node .skill-gem { transition: box-shadow .2s,border-
 @media print { .character-console { background: white; color: black; box-shadow: none; grid-template-columns: 180px 1fr; }.selected-skill { grid-column: 1/-1; }.portrait-actions,.character-portrait>.hint { display:none; }.skill-node-label,.skill-node-level,.portrait-caption h2,.portrait-caption p,.skill-description { color:black; } }
 
 .picker-portrait { width: 40px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #b39b6655; }
+
+/* Selo arcano e insígnias inspirados na referência da ficha. */
+.orbit-lines { stroke: #64ad9b44; filter: drop-shadow(0 0 10px #3dc4a819); }
+.orbit-lines .arcane-rings circle { fill: none; stroke: #6dbaaa45; stroke-width: .38; }
+.orbit-lines .arcane-rings circle:first-child { stroke-width: .7; stroke: #62b9a32e; }
+.orbit-lines .arcane-rings circle.arcane-dots { stroke-dasharray: .15 1.6; stroke-width: .55; }
+.orbit-lines .arcane-petals { fill: none; stroke: #51ab963f; stroke-width: .32; }
+.orbit-lines .arcane-petals path { stroke-width: .32; }
+.orbit-lines .arcane-marks { fill: none; stroke: #89c1af55; stroke-width: .35; }
+.orbit-lines .arcane-marks path { stroke-width: .5; }
+.skill-orbit { margin-bottom: 8px; }
+.skill-gem { position: relative; width: 42px; height: 42px; background: radial-gradient(ellipse at 35% 35%, #444057, #222430); border-color: #a28bb777; box-shadow: inset 0 0 0 3px #161b2055,0 0 17px #8872aa16; }
+.skill-gem:before { content: ''; position: absolute; inset: -4px; border: 1px solid #9882b044; pointer-events: none; }
+.skill-gem:after { content: ''; position: absolute; inset: 3px; border: 1px solid #aaa0ba30; pointer-events: none; }
+.skill-gem svg { width: 29px; height: 29px; stroke: #d5d3c9; stroke-width: 1.15; stroke-linejoin: round; stroke-linecap: round; }
+.skill-gem .sigil-shade { fill: #e3dfca24; stroke: none; }.skill-gem .sigil-solid { fill: #dedbc9; stroke: none; }
+.skill-node.selected .skill-gem { background: radial-gradient(ellipse at 40% 35%,#9a79b4,#593b74); border-color: #dcb8f2; box-shadow: inset 0 0 0 3px #b091c044,0 0 18px #ab73db55; }
+.skill-node.selected .skill-gem:before { border-color: #b28bd2aa; }
+.skill-node.selected .skill-gem svg { stroke: #f2e9dd; }
+.skill-node-center .skill-gem { background: #243232; border-color: #95aaa591; }
+.skill-node-center .skill-node-label { color: #d1dbd0; }
+.skill-node-center.selected .skill-gem { background: #61447b; border-color: #dcb8f2; }
+@media(max-width:700px) { .skill-gem { width: 36px; height: 36px; }.skill-gem svg { width: 26px; height: 26px; }.skill-gem:before { inset: -3px; } }
