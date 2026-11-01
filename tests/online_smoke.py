@@ -29,7 +29,7 @@ def api(route):
         if 'grant_type=refresh_token' not in request.url:
             assert request.post_data_json['email'] in ['a@example.com','b@example.com']
             if request.post_data_json['password'] != 'test-password-123':
-                route.fulfill(status=400, json={'code': 'invalid_credentials'})
+                route.fulfill(status=400, json={'code': 400, 'error_code': 'invalid_credentials', 'msg': 'Invalid login credentials'})
                 return
         if '/signup' in request.url and confirmation_required:
             route.fulfill(json={'user': {'id': 'unconfirmed'}})
@@ -123,17 +123,21 @@ with sync_playwright() as playwright:
     assert not a.evaluate("sessionStorage.getItem('atsu.auth')")
     confirmation_required = False
     for http_status, payload, expected in [
-        (403, {'code':'signup_disabled'}, 'cadastro está desativado'),
-        (422, {'code':'email_provider_disabled'}, 'acesso por e-mail está desativado'),
-        (500, {'code':'unexpected_failure','msg':'Error sending confirmation email'}, 'desative Confirm email'),
+        (400, {'code':400,'error_code':'signup_disabled','msg':'Signups not allowed for this instance'}, 'cadastro está desativado'),
+        (400, {'code':400,'error_code':'email_provider_disabled','msg':'Email signups are disabled'}, 'acesso por e-mail está desativado'),
+        (500, {'code':500,'error_code':'unexpected_failure','msg':'Error sending confirmation email'}, 'desative Confirm email'),
         (401, {'message':'Invalid API key'}, 'chave pública'),
         (500, {'code':'unexpected_failure'}, 'HTTP 500 / unexpected_failure'),
+        (400, {'code':400,'msg':'Unsupported provider: email provider disabled'}, 'Unsupported provider: email provider disabled'),
+        (400, {'code':400,'error_code':'validation_failed','msg':'A specific backend reason'}, 'A specific backend reason'),
+        (400, {'code':400,'msg':'<img src=x onerror=alert(1)>'}, '<img src=x onerror=alert(1)>'),
     ]:
         auth_error=(http_status,payload)
         a.click('#authSubmit')
         a.wait_for_function("expected => document.getElementById('authStatus').textContent.includes(expected)",arg=expected)
         assert a.locator('#appScreen').is_hidden()
         assert a.locator('#authSubmit').is_enabled()
+        assert a.locator('#authStatus img').count()==0
     auth_error=None
     login(a, signup=True)
     a.click('#onlineUpload')
