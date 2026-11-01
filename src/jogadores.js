@@ -5,7 +5,7 @@ const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=
 const fresh=(id,name,job,age,origin,bio)=>({id,name,job,age,origin,bio,skills:Object.fromEntries(SKILLS.map(s=>[s[0],0])),ppTotal:10,hp:6,hpMax:6,san:10,sanMax:10,root:1,clues:'',inventory:'',privateNotes:'',history:[]});
 function initial(){return {selected:null,characters:{}}}
 let state=initial();
-function char(){return state.characters[state.selected]};function persist(){if(!STORE)return;try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').textContent='● Salvo neste navegador'}catch{$('#saveStatus').textContent='⚠ Armazenamento bloqueado'}roomChanged();window.ATSUOnline?.changed()}
+function char(){return state.characters[state.selected]};function persist(){if(!STORE)return;try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').hidden=true}catch{$('#saveStatus').hidden=false}roomChanged();window.ATSUOnline?.changed()}
 let toastTimer;function toast(s){const el=$('#toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function spent(c){return SKILLS.reduce((total,[k])=>{const lv=num(c.skills[k]||0,0,5);return total+lv*(lv+1)/2},0)}
 const remaining=c=>Math.max(0,c.ppTotal-spent(c));

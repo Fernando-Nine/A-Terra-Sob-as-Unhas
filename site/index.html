@@ -211,7 +211,7 @@ dialog.dlg::backdrop{background:#050a08cc}
  <button id="onlineLogout" class="app-logout" aria-label="Sair da conta">Sair <span aria-hidden="true">→</span></button>
 </header>
 <main class="main app-main">
-<div class="app-status"><p id="onlineStatus" role="status" aria-live="polite"></p><div class="app-indicators"><span class="tag gold" id="saveStatus">● Salvamento local</span><button class="tag" id="roomTag" hidden></button></div></div>
+<div class="app-status"><p id="onlineStatus" role="status" aria-live="polite"></p><div class="app-indicators"><span class="tag warn" id="saveStatus" role="status" hidden>⚠ Não foi possível salvar neste navegador</span><button class="tag" id="roomTag" hidden></button></div></div>
 <section class="tabview" id="view-inicio" aria-labelledby="homeTitle">
  <div class="home-hero">
   <div class="home-copy"><p class="kicker">Horror investigativo · Sistema próprio · Brasil, 2026</p><h1 id="homeTitle" tabindex="-1">O desconhecido<br>deixa <em>marcas.</em></h1><p class="home-lead">Toda investigação começa com uma pergunta.<br>A sua história começa aqui.</p><p class="home-description">Crie seu investigador, registre descobertas e enfrente o que não consegue explicar. Este é o seu arquivo para jogar A Terra Sob as Unhas.</p><div class="actions home-actions"><button class="primary" data-tab="ficha">Acessar minhas fichas <span aria-hidden="true">→</span></button><button class="ghost" data-tab="regras">Conhecer as regras <span aria-hidden="true">→</span></button></div><div class="home-caption"><span>INVESTIGUE.</span><span>REGISTRE.</span><span>SOBREVIVA.</span></div></div>
@@ -631,7 +631,7 @@ const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=
 const fresh=(id,name,job,age,origin,bio)=>({id,name,job,age,origin,bio,skills:Object.fromEntries(SKILLS.map(s=>[s[0],0])),ppTotal:10,hp:6,hpMax:6,san:10,sanMax:10,root:1,clues:'',inventory:'',privateNotes:'',history:[]});
 function initial(){return {selected:null,characters:{}}}
 let state=initial();
-function char(){return state.characters[state.selected]};function persist(){if(!STORE)return;try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').textContent='● Salvo neste navegador'}catch{$('#saveStatus').textContent='⚠ Armazenamento bloqueado'}roomChanged();window.ATSUOnline?.changed()}
+function char(){return state.characters[state.selected]};function persist(){if(!STORE)return;try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').hidden=true}catch{$('#saveStatus').hidden=false}roomChanged();window.ATSUOnline?.changed()}
 let toastTimer;function toast(s){const el=$('#toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function spent(c){return SKILLS.reduce((total,[k])=>{const lv=num(c.skills[k]||0,0,5);return total+lv*(lv+1)/2},0)}
 const remaining=c=>Math.max(0,c.ppTotal-spent(c));
