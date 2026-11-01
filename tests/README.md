@@ -20,3 +20,13 @@ simula os schemas auth/storage e os papéis do Supabase e **nunca deve ser usado
 em produção**. O teste inclui contas fora da sala, associação por convite,
 restrições do papel de Mestre, resumos sem diário, documentos e arquivos
 privados. Não substitui validar o Storage e as contas no projeto Supabase real.
+
+Retratos: `online_smoke.py` verifica seleção de habilidades, envio e compressão
+de PNG para JPEG, persistência online e leitura da foto em outro navegador.
+`rooms_smoke.py` verifica compartilhamento antes/depois do ajuste SQL e a foto
+visível para outro participante, sem recarregar os retratos nas consultas estáveis.
+
+Para repetir a validação SQL dos retratos em banco vazio, aplique o bootstrap,
+`rooms.sql`, `portraits.sql`, `rooms_rls.sql` e `portraits_rls.sql`, nessa ordem.
+O último teste aceita o retrato JPEG, rejeita URLs externas, SVG e imagens
+acima do limite, mantém o diário privado e bloqueia contas fora da sala.

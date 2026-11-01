@@ -130,3 +130,26 @@ Arquivos apagados pela versão anterior podem deixar cartões com `NoSuchKey` /
 o original novamente e restaurar o mesmo caminho, sem mudar título, texto ou
 posição do cartão. Essa ação não sobrescreve um arquivo que já existe. Não é
 necessário executar SQL novamente para esta correção.
+
+## Retratos dos personagens
+
+Execute `supabase/portraits.sql` depois de ativar as salas. É um ajuste transacional
+e repetível da restrição de `sala_membros.ficha`: permite a chave `portrait`,
+sem alterar as políticas de acesso nem permitir diário/anotações no resumo.
+Não execute `rooms.sql` novamente em um projeto que já tem salas.
+
+O jogador usa **Adicionar foto** na ficha. Imagens JPEG, PNG e WebP de até 10 MB
+são recortadas no centro em 4:5, reduzidas a no máximo 320 × 400 e codificadas em
+JPEG de até 60.000 caracteres base64 (aproximadamente 45 KB binários). O retrato
+fica no JSON da ficha e acompanha exportação, importação, backup e salvamento
+online. Links externos e SVG não são aceitos como retrato.
+
+Ao compartilhar a ficha na Mesa, o retrato passa a fazer parte do resumo visível
+aos participantes. Antes do ajuste SQL, o site compartilha o resumo sem foto e
+mostra a orientação para ativar os retratos. Depois de executar o SQL, clique
+em **Compartilhar ficha atual** novamente. A ficha local e a ficha online já
+aceitam retratos mesmo antes desse ajuste de sala.
+
+As atualizações da sala consultam apenas identidade e data de alteração dos
+participantes primeiro. Resumos completos e retratos só são lidos novamente
+quando mudam, evitando transferir as mesmas fotos a cada consulta.

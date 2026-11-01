@@ -59,7 +59,7 @@ window.ATSUOnline = (() => {
    if(response.status===429)throw Error('Muitas tentativas. Aguarde antes de tentar novamente.');
    // O motivo é exibido como texto, nunca interpretado como HTML.
    const code=/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(reason)?' / '+reason:'';
-   throw Error(`O serviço recusou a solicitação (HTTP ${response.status}${code}). ${message||'Não foi informado um motivo. Avise o responsável pelo site.'}`);
+   const failure=Error(`O serviço recusou a solicitação (HTTP ${response.status}${code}). ${message||'Não foi informado um motivo. Avise o responsável pelo site.'}`);failure.code=reason;throw failure;
   }
   if(response.status===204||response.status===205)return null;
   if(format==='blob')return response.blob();

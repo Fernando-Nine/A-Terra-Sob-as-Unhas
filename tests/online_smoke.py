@@ -1,5 +1,6 @@
 """Browser smoke test with a simulated Supabase API; no external requests."""
 import copy
+import base64
 import json
 import re
 from pathlib import Path
@@ -175,6 +176,15 @@ with sync_playwright() as playwright:
         assert a.locator('#authStatus img').count()==0
     auth_error=None
     login(a, signup=True)
+    png=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC')
+    a.locator('#portraitFile').set_input_files({'name':'retrato.png','mimeType':'image/png','buffer':png})
+    a.wait_for_selector('.portrait-image img')
+    portrait=a.locator('.portrait-image img').get_attribute('src')
+    assert portrait.startswith('data:image/jpeg;base64,/9j/') and len(portrait)<=60000
+    a.locator('[data-select-skill=forca]').click()
+    assert a.locator('.selected-skill h2').inner_text()=='Força'
+    assert a.locator('.skill-cost').inner_text().startswith('1 PP')
+    a.locator('[data-select-skill=eloquencia]').click()
     assert a.locator('.app-header [data-motion-toggle]').count()==0
     assert a.locator('.maintenance [data-motion-toggle]').is_hidden()
     # Efeitos visuais não geram sorteios extras nem ocultam o conteúdo ao desativar.
@@ -211,6 +221,7 @@ with sync_playwright() as playwright:
     # Wait for the debounced update, not the preceding upload success message.
     a.wait_for_timeout(1000)
     saved = next(iter(rows.values()))
+    assert saved['character']['portrait']==portrait
     assert saved['character']['skills']['eloquencia'] == 1
     a.locator('.app-nav [data-tab=diario]').click()
     a.fill('#clues', 'Pista de teste preservada entre categorias')
@@ -227,15 +238,18 @@ with sync_playwright() as playwright:
     confirm(b)
     b.wait_for_function("document.getElementById('onlineStatus').textContent.startsWith('Ficha online aberta')")
     assert b.evaluate("JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).characters[JSON.parse(localStorage.getItem('atsu.jogadores.v1.owner-a')).selected].skills.eloquencia") == 1
+    assert b.locator('.portrait-image img').get_attribute('src')==portrait
     b.get_by_role('button', name='Aumentar Eloquência', exact=True).click()
     b.wait_for_timeout(1000)
     assert saved['character']['skills']['eloquencia'] == 2
 
+    a.locator('[data-select-skill=forca]').click()
     a.get_by_role('button', name='Aumentar Força', exact=True).click()
     a.wait_for_function("document.getElementById('onlineStatus').textContent.includes('outro aparelho')")
     assert saved['character']['skills']['forca'] == 0
     # Offline writes retain the local change and can be retried.
     failure = True
+    b.locator('[data-select-skill=forca]').click()
     b.get_by_role('button', name='Aumentar Força', exact=True).click()
     b.wait_for_function("document.getElementById('onlineStatus').textContent.includes('cópia local')")
     assert saved['character']['skills']['forca'] == 0

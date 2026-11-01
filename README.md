@@ -13,6 +13,10 @@ no navegador, no computador ou no celular, com acesso por e-mail e senha e sem i
 - Use **Fichas → Preferências e backups → Animações** para ativar ou pausar os efeitos. A preferência de
   movimento reduzido do aparelho é respeitada.
 - A seção Fichas começa vazia: crie seu investigador ou importe um arquivo.
+- A ficha tem retrato e sete habilidades em círculo: selecione uma habilidade
+  para ver sua descrição, custo de evolução e botões de teste.
+- Use **Adicionar foto** para escolher um retrato JPEG, PNG ou WebP. A foto é
+  incorporada à ficha e aparece para os participantes quando ela é compartilhada.
 - Distribua seus **10 PP** entre as sete habilidades: Eloquência, Força, Medicina, Ocultismo,
   Psicologia, Visão e Investigação. Subir do nível *n* para *n+1* custa *n+1* PP.
 - Para testar, role **2D6 + nível da habilidade + modificador do Mestre** contra 9 (normal),
@@ -37,7 +41,8 @@ no navegador, no computador ou no celular, com acesso por e-mail e senha e sem i
    exibir PDFs, use **Baixar arquivo**.
 
 As salas e os documentos usam Supabase e exigem executar
-[`supabase/rooms.sql`](supabase/rooms.sql) uma vez no SQL Editor. O convite permite
+[`supabase/rooms.sql`](supabase/rooms.sql) uma vez no SQL Editor. Para os retratos
+compartilhados, execute também [`supabase/portraits.sql`](supabase/portraits.sql). O convite permite
 que uma pessoa autenticada entre na sala. Somente os participantes acessam os
 resumos, rolagens públicas e arquivos. A atualização acontece a cada 4 segundos.
 A sala antiga por MQTT não é usada pela nova interface; seu transporte permanece
@@ -67,6 +72,7 @@ src/sala.js          sala ao vivo (compartilhada com o escudo do Mestre)
 src/style.css        estilos base (compartilhados com o escudo do Mestre)
 src/interface.css    identidade visual, animações e movimento reduzido
 src/effects.js       efeitos visuais, rolagens animadas e preferência de movimento
+src/portrait.js      prepara e valida os retratos incorporados às fichas
 build.py             junta tudo em site/index.html
 site/index.html      página pronta, publicada pelo GitHub Pages
 site/vendor/         MQTT.js 5.16.0 (MIT), baixado só por quem entra numa sala

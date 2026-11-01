@@ -542,6 +542,78 @@ html[data-motion=off] button, html[data-motion=off] .pick, html[data-motion=off]
 @media print { .motion-toggle, .fx-ripple { display: none !important; } }
 
 .maintenance .motion-toggle { width: auto; }.maintenance .motion-label { display: inline; }.preference-controls { padding-top: 10px; }
+
+/* Ficha de personagem: retrato, constelação de habilidades e detalhe do nível. */
+.character-console { --orbit: #77c5b5; --violet: #b9a1e8; display: grid; grid-template-columns: minmax(180px,.85fr) minmax(330px,1.5fr) minmax(245px,1fr); gap: 20px; padding: 28px; border: 1px solid #84729870; border-radius: 15px; background: radial-gradient(ellipse at 46% 40%,#23675a2b,transparent 53%),radial-gradient(ellipse at 100% 0,#664b8924,transparent 65%),#0b1513; margin: 26px 0; box-shadow: inset 0 1px #ceb4ea0a,0 15px 45px #0003; }
+.character-portrait { min-width: 0; position: relative; }
+.portrait-image { aspect-ratio: 4/5; max-height: 400px; position: relative; border: 1px solid #8fae8b45; border-radius: 10px; overflow: hidden; background: radial-gradient(ellipse at 50% 25%,#38534255,transparent 80%),#101e19; }
+.portrait-image:after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 -40px 40px #0a151377; pointer-events: none; }
+.portrait-image>img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.portrait-placeholder { display: flex; height: 100%; align-items: center; justify-content: center; flex-direction: column; padding: 25px; gap: 12px; color: #92a991; }
+.portrait-placeholder svg { width: 100%; max-height: 220px; stroke: #96b0a16b; stroke-width: 1; }
+.portrait-placeholder>span { font: italic 17px Georgia,serif; color: #91a68f; }
+.portrait-caption { padding: 22px 0 10px; }
+.portrait-caption h2 { font: 400 29px/1.2 Georgia,serif; color: #eee2c4; margin: 10px 0 6px; overflow-wrap: anywhere; }
+.portrait-caption p { margin: 0; color: #a9bda6; font-size: 12px; }
+.portrait-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.portrait-actions button { flex: 1; font-size: 11px; padding: 9px; border-color: #84a78c55; background: #1d372b; }
+.character-portrait>.hint { font-size: 10px; margin-bottom: 0; }
+.skill-map { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+.skill-map-caption { text-align: center; margin: 0 0 20px; }
+.skill-map-caption h3 { font: 400 23px/1.3 Georgia,serif; color: #d0ddcc; margin: 10px 0; }
+.skill-orbit { width: 100%; aspect-ratio: 1; position: relative; min-height: 330px; }
+.orbit-lines { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #67c0ab40; stroke-width: .35; filter: drop-shadow(0 0 12px #67b9a52b); }
+.orbit-lines circle:first-child { stroke-width: 1; stroke: #4c9e8b25; }
+.orbit-lines path { stroke-width: .2; }
+.orbit-center { position: absolute; top: 46%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: #77bca697; pointer-events: none; }
+.orbit-center>span { display: block; font: 50px/1.3 Georgia,serif; text-shadow: 0 0 24px #60d2aa33; }
+.orbit-center small { display: block; font-size: 7px; letter-spacing: .2em; }
+.skill-node { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%,-50%)!important; display: flex; flex-direction: column; width: 100px; min-height: 96px; gap: 7px; padding: 0; border: 0; border-radius: 0; background: transparent; color: #c4d4c4; }
+.skill-node:not(:disabled):hover { background: transparent; box-shadow: none; color: #f2e5ff; }
+.skill-node-label { font: 12px/1.2 Georgia,serif; color: #c8d5c4; }
+.skill-gem { display: grid; place-items: center; width: 39px; height: 39px; margin: 4px 0; border: 1px solid #9e87bf77; background: #2e2941; transform: rotate(45deg); box-shadow: inset 0 0 0 4px #161c2355,0 0 14px #9769e222; }
+.skill-gem svg { width: 23px; height: 23px; stroke: #c7c2d1; stroke-width: 1.5; transform: rotate(-45deg); }
+.skill-node-level { color: #b5c4b3; font: 11px ui-monospace,monospace; }
+.skill-node.selected .skill-gem { background: #604780; border-color: #cfabf2; box-shadow: inset 0 0 0 4px #866c9b44,0 0 22px #b387ec55; }
+.skill-node.selected .skill-node-label { color: #ddc6fa; }
+.skill-node.selected .skill-node-level { color: #f2e0ff; }
+.skill-node:focus-visible { outline: 1px solid #d5b7f0; outline-offset: 4px; border-radius: 8px; }
+.selected-skill { align-self: center; padding: 25px 0 25px 20px; border-left: 1px solid #a88dc33d; min-width: 0; }
+.selected-skill>.kicker { font-size: 8px; color: #ab9abd; }
+.selected-skill h2 { font: 400 34px Georgia,serif; color: #d8bafa; padding: 14px 0; border-block: 1px solid #b79ec62e; margin: 17px 0; text-align: center; }
+.skill-description { font: 14px/1.9 Georgia,serif; color: #b7c8b7; min-height: 80px; }
+.skill-level-track { display: grid; grid-template-columns: repeat(5,1fr); gap: 9px; margin: 28px 0 24px; }
+.skill-level-track span { display: grid; place-items: center; aspect-ratio: 1; max-width: 40px; border: 1px solid #8576935c; border-radius: 5px; color: #8e9d8d; font: 15px Georgia,serif; background: #17211e; }
+.skill-level-track .learned { background: #563974; color: #f2d6ff; border-color: #b38dd4; box-shadow: 0 0 14px #ad72d82a; }
+.skill-cost { display: flex; align-items: center; gap: 9px; color: #8bcbbb; margin: 22px 0; font-size: 12px; }
+.skill-cost strong { color: #92dfca; font: 23px Georgia,serif; white-space: nowrap; }
+.selected-skill-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.selected-skill-actions>button { font-size: 11px; padding-inline: 8px; }
+.selected-skill-actions .rollbtn { grid-column: 1/-1; font-size: 12px; }
+.console-pp { display: flex; flex-direction: column; gap: 6px; border-block: 1px solid #70b9a64a; margin-top: 24px; padding: 15px; background: #5fa38a0a; }
+.console-pp b { font: 27px Georgia,serif; color: #92d8bf; }
+.console-pp span { font-size: 11px; color: #a0c1ad; }
+.selected-skill>.hint { font-size: 10px; }
+.member-portrait { width: 72px; height: 90px; object-fit: cover; float: left; margin: 0 16px 12px 0; border-radius: 8px; border: 1px solid #a98d6266; }
+.member { display: flow-root; }
+html[data-motion=on] .skill-node .skill-gem { transition: box-shadow .2s,border-color .2s,background-color .2s; }
+@media(max-width:1100px) {
+ .character-console { grid-template-columns: minmax(180px,.8fr) minmax(320px,1.4fr); }
+ .selected-skill { grid-column: 1/-1; border-left: 0; border-top: 1px solid #a88dc33d; padding: 25px 0 0; }
+ .selected-skill h2 { text-align: left; }.skill-description { min-height: 0; }.skill-level-track { max-width: 310px; }.selected-skill-actions { max-width: 380px; }
+ .portrait-image { max-height: 365px; }.skill-orbit { max-width: 450px; margin: auto; }
+}
+@media(max-width:700px) {
+ .character-console { grid-template-columns: minmax(0,1fr); padding: 20px 16px; gap: 25px; }
+ .character-portrait { display: grid; grid-template-columns: minmax(100px,.7fr) minmax(0,1fr); gap: 12px 16px; }
+ .portrait-image { grid-row: 1/3; max-height: 210px; }.portrait-caption { padding: 12px 0 0; }.portrait-caption h2 { font-size: 25px; }.portrait-caption .kicker { font-size: 8px; }
+ .portrait-actions { flex-direction: column; }.character-portrait>.hint { grid-column: 1/-1; margin-top: 0; }
+ .skill-map-caption { margin-bottom: 8px; }.skill-map-caption h3 { font-size: 22px; }.skill-orbit { min-height: 300px; }.skill-node { width: 78px; min-height: 92px; }.skill-node-label { font-size: 11px; }.skill-node-level { font-size: 10px; }.skill-gem { width: 33px; height: 33px; }.skill-gem svg { width: 21px; height: 21px; }
+ .selected-skill { grid-column: 1; }.selected-skill h2 { font-size: 30px; }.selected-skill-actions { max-width: none; }.skill-description { font-size: 14px; }.skill-level-track { margin-block: 20px; }
+}
+@media print { .character-console { background: white; color: black; box-shadow: none; grid-template-columns: 180px 1fr; }.selected-skill { grid-column: 1/-1; }.portrait-actions,.character-portrait>.hint { display:none; }.skill-node-label,.skill-node-level,.portrait-caption h2,.portrait-caption p,.skill-description { color:black; } }
+
+.picker-portrait { width: 40px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #b39b6655; }
 </style></head>
 <body><svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><symbol id="icon-inicio" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/></symbol><symbol id="icon-ficha" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="9" r="2"/><path d="M8 16c0-4 8-4 8 0M9 19h6"/></symbol><symbol id="icon-dados" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7 7h.01M17 7h.01M12 12h.01M7 17h.01M17 17h.01" stroke-width="3" stroke-linecap="round"/></symbol><symbol id="icon-mesa" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="3" r="1.5"/><circle cx="21" cy="12" r="1.5"/><circle cx="12" cy="21" r="1.5"/><circle cx="3" cy="12" r="1.5"/></symbol><symbol id="icon-diario" viewBox="0 0 24 24"><path d="M12 5C8 2 3 4 3 4v15s5-2 9 1c4-3 9-1 9-1V4s-5-2-9 1v15"/><path d="M6 8h3m-3 4h3m6-4h3m-3 4h3"/></symbol><symbol id="icon-regras" viewBox="0 0 24 24"><path d="M5 3h12a2 2 0 0 1 2 2v16H6a3 3 0 0 1 0-6h13M5 3v12M9 7h6m-6 4h4"/></symbol><symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></symbol><symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol><symbol id="icon-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 16H3V8h18v8h-4M7 13h10v8H7Z"/><path d="M17 10h1"/></symbol></svg>
 <section id="authScreen" class="auth-page" aria-label="Acesso dos investigadores">
@@ -657,6 +729,27 @@ window.addEventListener('DOMContentLoaded',start);
 return {appear,scan,section,pulse,roll};
 })();
 
+// Retratos são imagens JPEG pequenas incorporadas à ficha, sem URLs de terceiros.
+window.ATSUPhoto=(()=>{'use strict';
+const MAX=60000;
+function clean(value){return typeof value==='string'&&value.length<=MAX&&/^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/]*={0,2}$/.test(value)?value:''}
+async function prepare(file){
+ if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Escolha uma imagem JPEG, PNG ou WebP.');
+ if(file.size>10*1024*1024)throw Error('A imagem pode ter até 10 MB.');
+ let bitmap;try{bitmap=await createImageBitmap(file,{resizeWidth:640,resizeQuality:'high',imageOrientation:'from-image'})}catch{throw Error('Não foi possível abrir esta imagem. Escolha outro arquivo.')}
+ const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+ try{
+  let sw=bitmap.width,sh=bitmap.height;if(sw/sh>.8)sw=sh*.8;else sh=sw/.8;
+  for(const width of [320,240,160]){
+   canvas.width=width;canvas.height=width*1.25;ctx.fillStyle='#14221c';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,(bitmap.width-sw)/2,(bitmap.height-sh)/2,sw,sh,0,0,canvas.width,canvas.height);
+   for(const quality of [.84,.7,.55,.4]){const data=canvas.toDataURL('image/jpeg',quality);if(clean(data))return data}
+  }
+  throw Error('Não foi possível reduzir esta foto. Escolha uma imagem menor.');
+ }finally{bitmap.close();canvas.width=canvas.height=1}
+}
+return {clean,prepare};
+})();
+
 // Supabase Auth e PostgREST via HTTPS; nenhuma chave secreta no navegador.
 window.ATSUOnline = (() => {
  'use strict';
@@ -718,7 +811,7 @@ window.ATSUOnline = (() => {
    if(response.status===429)throw Error('Muitas tentativas. Aguarde antes de tentar novamente.');
    // O motivo é exibido como texto, nunca interpretado como HTML.
    const code=/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(reason)?' / '+reason:'';
-   throw Error(`O serviço recusou a solicitação (HTTP ${response.status}${code}). ${message||'Não foi informado um motivo. Avise o responsável pelo site.'}`);
+   const failure=Error(`O serviço recusou a solicitação (HTTP ${response.status}${code}). ${message||'Não foi informado um motivo. Avise o responsável pelo site.'}`);failure.code=reason;throw failure;
   }
   if(response.status===204||response.status===205)return null;
   if(format==='blob')return response.blob();
@@ -868,7 +961,7 @@ const topico=(codigo,tipo,cid)=>`${RAIZ}${codigo}/${tipo}/${cid||'+'}`;
 
 // Tudo que chega da rede é de terceiros: só passa o que tem o formato esperado.
 function limparFicha(f){if(!f||typeof f!=='object')return null;const hpMax=n(f.hpMax,1,99),sanMax=n(f.sanMax,1,99),skills={};HABILIDADES.forEach(k=>skills[k]=n(f.skills?.[k],0,5));
- return {name:String(f.name||'Sem nome').slice(0,60),job:String(f.job||'').slice(0,80),hp:n(f.hp,0,hpMax),hpMax,san:n(f.san,0,sanMax),sanMax,root:n(f.root,0,20),skills,ppTotal:n(f.ppTotal,0,999)}}
+ const portrait=window.ATSUPhoto?.clean(f.portrait)||'';return {...(portrait?{portrait}:{}),name:String(f.name||'Sem nome').slice(0,60),job:String(f.job||'').slice(0,80),hp:n(f.hp,0,hpMax),hpMax,san:n(f.san,0,sanMax),sanMax,root:n(f.root,0,20),skills,ppTotal:n(f.ppTotal,0,999)}}
 function limparRolagens(lista){return Array.isArray(lista)?lista.slice(0,MAX_ROLAGENS).filter(r=>r&&typeof r==='object').map(r=>({id:String(r.id||'').slice(0,16),t:Number(r.t)||0,name:String(r.name||'').slice(0,60),a:n(r.a,1,6),b:n(r.b,1,6),level:n(r.level,0,5),mod:n(r.mod,-3,3),total:n(r.total,-10,40),target:n(r.target,0,30),skill:String(r.skill||'').slice(0,40),ok:!!r.ok,crit:r.crit==='win'||r.crit==='lose'?r.crit:null})):[]}
 
 // papel 'jogador' publica e marca presença; 'mestre' só escuta.
@@ -896,7 +989,7 @@ return {SITE,MAX_ROLAGENS,TEXTO,novoCodigo,limparCodigo,meuCid,conectar,limparFi
 // Salas autenticadas: o banco aplica as permissões; dados privados nunca saem daqui.
 window.ATSUMesa=(()=>{'use strict';
 let app=null,sala=null,epoch=0,poll=null,shareTimer=null,shareId='',lastSheet='',syncing=false,dragging=false,docs=[],privateRolls=[];
-const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),uuid=s=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(s),assets=new Map(),loadingAssets=new Map();let previewURL='',restoreCard=null;
+const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),uuid=s=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(s),assets=new Map(),loadingAssets=new Map();let previewURL='',restoreCard=null;let memberCache=new Map();
 const message=(s,bad=false)=>{$('mesaStatus').textContent=s;$('mesaStatus').className=bad?'note mesa-error':'hint'};
 const master=()=>sala&&sala.mestre_id===app?.user.id;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
@@ -906,17 +999,19 @@ function roomKey(){return 'atsu.mesa.v2.'+app.user.id}
 function privateKey(){return 'atsu.mesa.privada.'+app.user.id+'.'+sala.id}
 function remember(){try{localStorage.setItem(roomKey(),sala.id)}catch{}}
 function revokeAssets(){loadingAssets.clear();if($('documentDialog').open)$('documentDialog').close();assets.forEach(v=>URL.revokeObjectURL(v));assets.clear()}
-function stop(){epoch++;clearInterval(poll);clearTimeout(shareTimer);poll=null;shareId='';lastSheet='';sala=null;privateRolls=[];app=null;syncing=false;revokeAssets();$('mesaInside').hidden=true;$('mesaLobby').hidden=false;$('privateHistory').replaceChildren();$('mesaMembers').replaceChildren();$('mesaRolls').replaceChildren();$('boardCanvas').replaceChildren();$('roomTag').hidden=true}
+function stop(){memberCache.clear();epoch++;clearInterval(poll);clearTimeout(shareTimer);poll=null;shareId='';lastSheet='';sala=null;privateRolls=[];app=null;syncing=false;revokeAssets();$('mesaInside').hidden=true;$('mesaLobby').hidden=false;$('privateHistory').replaceChildren();$('mesaMembers').replaceChildren();$('mesaRolls').replaceChildren();$('boardCanvas').replaceChildren();$('roomTag').hidden=true}
 function changed(){if(!sala||!shareId)return;if(!app.hasCharacter(shareId)){run(unshare);return}clearTimeout(shareTimer);shareTimer=setTimeout(()=>run(publish),450)}
 async function publish(){
  if(!sala||app.current()?.id!==shareId)return;
  const ficha=ATSUSala.limparFicha(app.current()),body=JSON.stringify(ficha);if(body===lastSheet)return;
  const version=epoch;
- await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha,apelido:ficha.name,updated_at:new Date().toISOString()},'PATCH');
- if(version===epoch){lastSheet=body;await sync()}
+ let portraitUnavailable=false;
+ try{await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha,apelido:ficha.name,updated_at:new Date().toISOString()},'PATCH')}
+ catch(error){if(version!==epoch)throw error;if(!ficha.portrait||error.code!=='23514')throw error;const {portrait,...summary}=ficha;await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha:summary,apelido:ficha.name,updated_at:new Date().toISOString()},'PATCH');portraitUnavailable=true;message('A ficha foi compartilhada sem foto. Para ativar os retratos na sala, o responsável precisa executar supabase/portraits.sql.',true)}
+ if(version===epoch){lastSheet=body;await sync()}return portraitUnavailable;
 }
-async function unshare(){if(!sala)return;shareId='';lastSheet='';await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha:null},'PATCH');await sync()}
-async function share(){if(!sala)return;if(!app.current()){message('Crie ou abra uma ficha antes de compartilhar.',true);return}shareId=app.current().id;lastSheet='';await publish();message('Somente o resumo da ficha está compartilhado com a sala.')}
+async function unshare(){if(!sala)return;shareId='';lastSheet='';await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha:null,updated_at:new Date().toISOString()},'PATCH');await sync()}
+async function share(){if(!sala)return;if(!app.current()){message('Crie ou abra uma ficha antes de compartilhar.',true);return}shareId=app.current().id;lastSheet='';const unavailable=await publish();if(!unavailable)message('O resumo da ficha e seu retrato estão compartilhados com a sala.')}
 async function roll(r){
  if(!sala||!shareId||app.current()?.id!==shareId)return;
  const target=sala.id,name=String(app.current().name).slice(0,60);
@@ -929,7 +1024,7 @@ async function rooms(){
 }
 async function enter(r){
  if(!uuid(r.id))throw Error('Sala inválida.');
- epoch++;clearInterval(poll);revokeAssets();shareId='';lastSheet='';sala=r;remember();syncing=false;
+ epoch++;clearInterval(poll);memberCache.clear();revokeAssets();shareId='';lastSheet='';sala=r;remember();syncing=false;
  // A função de entrada garante a associação autenticada, inclusive para o criador.
  const version=epoch;
  await api('/rest/v1/rpc/entrar_sala',{p_codigo:r.codigo,p_apelido:master()?'Mestre':'Investigador'});if(version!==epoch)return;
@@ -946,16 +1041,20 @@ async function sync(force=false){
  if(!sala||syncing)return;syncing=true;const id=sala.id,version=epoch;
  try{
   const [members,rolls,cards]=await Promise.all([
-   api('/rest/v1/sala_membros?sala_id=eq.'+id+'&select=user_id,apelido,ficha,updated_at',undefined,'GET'),
+   api('/rest/v1/sala_membros?sala_id=eq.'+id+'&select=user_id,apelido,updated_at',undefined,'GET'),
    api('/rest/v1/sala_rolagens?sala_id=eq.'+id+'&select=*&order=created_at.desc&limit=40',undefined,'GET'),
    api('/rest/v1/sala_documentos?sala_id=eq.'+id+'&select=*&order=id',undefined,'GET')]);
-  if(version!==epoch)return;docs=cards;renderMembers(members);renderRolls(rolls);if(force||(!dragging&&!document.activeElement?.closest('.board-card')))renderBoard();
+  if(version!==epoch)return;
+  const changed=members.filter(m=>uuid(m.user_id)&&(!memberCache.has(m.user_id)||memberCache.get(m.user_id).updated_at!==m.updated_at));
+  for(let i=0;i<changed.length;i+=50){const ids=changed.slice(i,i+50).map(m=>m.user_id).join(',');const full=await api('/rest/v1/sala_membros?sala_id=eq.'+id+'&user_id=in.('+ids+')&select=user_id,apelido,ficha,updated_at',undefined,'GET');if(version!==epoch)return;full.forEach(m=>memberCache.set(m.user_id,m))}
+  for(const key of memberCache.keys())if(!members.some(m=>m.user_id===key))memberCache.delete(key);
+  docs=cards;renderMembers(members.map(m=>({...m,ficha:memberCache.get(m.user_id)?.ficha||null})));renderRolls(rolls);if(force||(!dragging&&!document.activeElement?.closest('.board-card')))renderBoard();
  }finally{if(version===epoch)syncing=false}
 }
 function renderMembers(members){
  const root=$('mesaMembers');root.replaceChildren();for(const m of members){
   const card=el('article',undefined,'member');card.append(el('b',m.ficha?.name||m.apelido||'Investigador'),el('span',m.user_id===sala.mestre_id?' · Mestre':m.user_id===app.user.id?' · você':'','small'));
-  const f=ATSUSala.limparFicha(m.ficha);if(f){card.append(el('p',f.job,'small'),el('p',`Vida ${f.hp}/${f.hpMax} · Sanidade ${f.san}/${f.sanMax} · Raiz ${f.root}`));const skills=el('div',undefined,'room-skills');for(const [k,n] of [['eloquencia','Eloquência'],['forca','Força'],['medicina','Medicina'],['ocultismo','Ocultismo'],['psicologia','Psicologia'],['visao','Visão'],['investigacao','Investigação']])skills.append(el('span',n+' '+f.skills[k],'pill'));card.append(skills)}else card.append(el('p','Ainda não compartilhou uma ficha.','small'));root.append(card);
+  const f=ATSUSala.limparFicha(m.ficha);if(f){if(f.portrait){const photo=el('img');photo.className='member-portrait';photo.src=f.portrait;photo.alt='Retrato de '+f.name;photo.loading='lazy';card.prepend(photo)}card.append(el('p',f.job,'small'),el('p',`Vida ${f.hp}/${f.hpMax} · Sanidade ${f.san}/${f.sanMax} · Raiz ${f.root}`));const skills=el('div',undefined,'room-skills');for(const [k,n] of [['eloquencia','Eloquência'],['forca','Força'],['medicina','Medicina'],['ocultismo','Ocultismo'],['psicologia','Psicologia'],['visao','Visão'],['investigacao','Investigação']])skills.append(el('span',n+' '+f.skills[k],'pill'));card.append(skills)}else card.append(el('p','Ainda não compartilhou uma ficha.','small'));root.append(card);
  }
  if(!members.length)root.append(el('p','Nenhum participante ainda.','small'));
 }
@@ -1037,17 +1136,23 @@ return {start,stop,changed,roll,share};
 let STORE='';
 const SKILLS=[['eloquencia','Eloquência','Conversas, influência, negociação e intimidação verbal.'],['forca','Força','Esforço físico, carregar, arrombar, lutar e resistência muscular.'],['medicina','Medicina','Atendimento, ferimentos, diagnósticos e biologia clínica.'],['ocultismo','Ocultismo','Reconhecer símbolos, histórias e tradições ocultas; não significa entender Ka’a-Po’a.'],['psicologia','Psicologia','Ler emoções, notar contradições e compreender comportamento.'],['visao','Visão','Encontrar detalhes visuais, rastros, pistas discretas e padrões.'],['investigacao','Investigação','Pesquisar arquivos, cruzar informações, decifrar dados e organizar provas.']];
 const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), num=(n,a,b)=>Math.max(a,Math.min(b,Number.isFinite(+n)?Math.trunc(+n):a));
-const fresh=(id,name,job,age,origin,bio)=>({id,name,job,age,origin,bio,skills:Object.fromEntries(SKILLS.map(s=>[s[0],0])),ppTotal:10,hp:6,hpMax:6,san:10,sanMax:10,root:1,clues:'',inventory:'',privateNotes:'',history:[]});
+const fresh=(id,name,job,age,origin,bio)=>({id,name,job,age,origin,bio,skills:Object.fromEntries(SKILLS.map(s=>[s[0],0])),ppTotal:10,hp:6,hpMax:6,san:10,sanMax:10,root:1,portrait:'',clues:'',inventory:'',privateNotes:'',history:[]});
 function initial(){return {selected:null,characters:{}}}
-let state=initial();
+let state=initial(),activeSkill='eloquencia';
 function char(){return state.characters[state.selected]};function persist(){if(!STORE)return;try{localStorage.setItem(STORE,JSON.stringify(state));$('#saveStatus').hidden=true}catch{$('#saveStatus').hidden=false}roomChanged();window.ATSUOnline?.changed()}
 let toastTimer;function toast(s){const el=$('#toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function spent(c){return SKILLS.reduce((total,[k])=>{const lv=num(c.skills[k]||0,0,5);return total+lv*(lv+1)/2},0)}
 const remaining=c=>Math.max(0,c.ppTotal-spent(c));
-function renderPicker(){const c=char();$('#picker').innerHTML=Object.values(state.characters).map(p=>`<button class="pick ${c?.id===p.id?'selected':''}" data-pick="${esc(p.id)}"><b>${esc(p.name)}</b><span>${esc(p.job||'Investigador')}</span></button>`).join('')}
+function renderPicker(){const c=char();$('#picker').innerHTML=Object.values(state.characters).map(p=>`<button class="pick ${c?.id===p.id?'selected':''}" data-pick="${esc(p.id)}">${ATSUPhoto.clean(p.portrait)?`<img class="picker-portrait" src="${ATSUPhoto.clean(p.portrait)}" alt="">`:""}<b>${esc(p.name)}</b><span>${esc(p.job||'Investigador')}</span></button>`).join('')}
 function renderSheet(){const c=char();if(!c){$('#charPane').innerHTML='<div class="panel empty-sheets"><h2>Seu arquivo está em branco.</h2><p>Crie seu investigador ou importe uma ficha para começar.</p></div>';renderRollSkills();return}
-let abilities=SKILLS.map(([k,name,desc])=>{const n=num(c.skills[k]||0,0,5),cost=n+1,avail=remaining(c);return `<div class="ability"><div class="ability-head"><div><div class="ability-name">${name} <span class="badge">Nível ${n}</span></div><div class="ability-desc">${desc}</div></div><div class="ability-btns"><button class="iconbtn" data-skill="${k}" data-delta="-1" aria-label="Reduzir ${name}" ${n===0?'disabled':''}>−</button><button class="iconbtn primary" data-skill="${k}" data-delta="1" aria-label="Aumentar ${name}" ${n===5||cost>avail?'disabled':''}>+</button><button class="iconbtn rollbtn" data-quickroll="${k}" aria-label="Rolar ${name}" title="Rolar ${name}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-dados"/></svg></button></div></div><div class="row between"><div class="dots">${[1,2,3,4,5].map(x=>`<span class="dot ${x<=n?'on':''}"></span>`).join('')}</div><span class="hint">${n===5?'Máximo alcançado':`Próximo nível: ${cost} PP`}</span></div></div>`}).join('');
-$('#charPane').innerHTML=`<div class="grid cols2 dossier-grid"><div class="panel identity-panel"><div class="row between"><div><div class="kicker">Identidade</div><h2>${esc(c.name)}</h2></div><button class="tiny danger" id="deleteChar">Excluir ficha</button></div><div class="fieldrow"><div class="field"><label class="label" for="charName">Nome</label><input id="charName" maxlength="60" value="${esc(c.name)}"></div><div class="field"><label class="label" for="charJob">Profissão</label><input id="charJob" maxlength="80" value="${esc(c.job)}"></div><div class="field"><label class="label" for="charAge">Idade</label><input type="number" id="charAge" min="14" max="100" value="${num(c.age,14,100)}"></div><div class="field"><label class="label" for="charOrigin">Origem</label><input id="charOrigin" maxlength="90" value="${esc(c.origin)}"></div></div><div class="space"></div><label class="label" for="charBio">Antecedentes / traços marcantes</label><textarea id="charBio" rows="5" maxlength="3000">${esc(c.bio)}</textarea><div class="space"></div><div class="note">Sua profissão influencia o que faz sentido na ficção, mas não restringe onde investir PP. A habilidade substitui a antiga perícia em D100.</div></div><div class="panel condition-panel"><div class="kicker">Condição atual</div><h2>Vida, Sanidade e Raiz</h2><div class="grid cols3" style="gap:9px">${[['hp','Vida',c.hpMax],['san','Sanidade',c.sanMax],['root','Raiz','']].map(([k,n,max])=>`<div class="stat stat-${k}"><div class="cap">${n}</div><div class="n mono">${num(c[k],0,k==='root'?20:99)}${max?`<span class="small">/${num(max,1,99)}</span>`:''}</div>${max?`<label class="maxline">máx <input type="number" class="maxinput" data-max="${k}" min="1" max="99" value="${num(max,1,99)}" aria-label="Máximo de ${n}"></label>`:''}<div class="statbtns"><button data-res="${k}" data-resdelta="-1" aria-label="Diminuir ${n}">−</button><button data-res="${k}" data-resdelta="1" aria-label="Aumentar ${n}">+</button></div></div>`).join('')}</div><p class="hint">Ajuste os recursos apenas quando o Mestre determinar. Todos iniciam com 1 ponto de Raiz, respeitando o Ato I.</p><div class="rule"></div><div class="row between"><div><div class="kicker">Pontos de Personagem</div><h2 style="margin:5px 0">${remaining(c)} <span class="small">PP livres</span></h2></div><span class="tag">${spent(c)} investidos · ${c.ppTotal} recebidos</span></div><div class="meter"><i style="width:${c.ppTotal?Math.min(100,spent(c)/c.ppTotal*100):0}%"></i></div><div class="row" style="margin-top:14px"><label class="small" for="awardPP">Pontos concedidos pelo Mestre</label><input type="number" class="numinput" id="awardPP" value="2" min="1" max="20"><button id="grantPP">+ Receber PP</button></div><p class="hint">Distribuição livre: comprar o próximo nível custa 1, 2, 3, 4 ou 5 PP. Reduzir um nível devolve seus pontos para corrigir a distribuição.</p></div></div><div class="space"></div><div class="panel ability-panel"><div class="row between"><div><div class="kicker">Árvore de habilidades</div><h2>Invista onde quiser</h2></div><span class="tag gold">${remaining(c)} PP disponíveis</span></div><div class="grid cols2">${abilities}</div></div>`;
+const portrait=ATSUPhoto.clean(c.portrait);
+const selected=SKILLS.find(([key])=>key===activeSkill)||SKILLS[0];activeSkill=selected[0];
+const currentLevel=num(c.skills[activeSkill],0,5),nextCost=currentLevel+1;
+const positions=[[50,12],[79,27],[86,59],[66,85],[34,85],[14,59],[21,27]];
+const glyphs=['<path d="M3 4h18v12H9l-6 4Zm4 4h10m-10 4h6"/>','<path d="m13 2-9 12h7l-1 8 10-13h-7Z"/>','<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6Z"/>','<path d="M17 3a9 9 0 1 0 4 14A9 9 0 0 1 17 3Z"/><path d="m19 4 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"/>','<path d="M12 3v18M12 5C5-2-1 12 6 12c-7 5 2 12 6 6m0-13c7-7 13 7 6 7 7 5-2 12-6 6"/>','<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>','<circle cx="10" cy="10" r="7"/><path d="m15 15 7 7M7 10h6m-3-3v6"/>'];
+const nodes=SKILLS.map(([key,name],i)=>`<button type="button" class="skill-node ${key===activeSkill?'selected':''}" data-select-skill="${key}" style="--x:${positions[i][0]}%;--y:${positions[i][1]}%" aria-pressed="${key===activeSkill}" aria-label="Selecionar ${name}, nível ${num(c.skills[key],0,5)}"><span class="skill-node-label">${name}</span><span class="skill-gem" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none">${glyphs[i]}</svg></span><span class="skill-node-level">${num(c.skills[key],0,5)} / 5</span></button>`).join('');
+const constellation=`<section class="character-console" aria-label="Retrato e habilidades do investigador"><div class="character-portrait"><div class="portrait-image">${portrait?`<img src="${portrait}" alt="Retrato de ${esc(c.name)}">`:'<div class="portrait-placeholder" aria-hidden="true"><svg viewBox="0 0 200 260" fill="none"><circle cx="100" cy="90" r="34"/><path d="M30 230c0-96 140-96 140 0M42 205l58-30 58 30M100 10v25m0 125v18M15 90h25m120 0h25"/></svg><span>Seu investigador</span></div>'}</div><div class="portrait-caption"><span class="kicker">Arquivo pessoal</span><h2>${esc(c.name)}</h2><p>${esc(c.job||'Investigador')}</p></div><div class="portrait-actions"><button type="button" id="changePortrait">${portrait?'Trocar retrato':'Adicionar foto'}</button>${portrait?'<button type="button" id="removePortrait" class="ghost">Remover foto</button>':''}<input id="portraitFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></div><p class="hint">A foto faz parte da ficha e será vista pela mesa quando você a compartilhar.</p></div><div class="skill-map"><div class="skill-map-caption"><span class="kicker">Suas sete habilidades</span><h3>O que torna você capaz.</h3></div><div class="skill-orbit" role="group" aria-label="Escolha uma habilidade"><svg class="orbit-lines" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="37"/><circle cx="50" cy="50" r="28"/><path d="M50 12 79 27 86 59 66 85 34 85 14 59 21 27ZM50 12 66 85 21 27 86 59 34 85 79 27 14 59Z"/></svg><div class="orbit-center" aria-hidden="true"><span>⌘</span><small>INVESTIGADOR</small></div>${nodes}</div></div><div class="selected-skill"><span class="kicker">Habilidade selecionada</span><h2>${selected[1]}</h2><p class="skill-description">${selected[2]}</p><div class="skill-level-track" aria-label="Nível ${currentLevel} de 5">${[1,2,3,4,5].map(n=>`<span class="${n<=currentLevel?'learned':''}">${n}</span>`).join('')}</div><div class="skill-cost">${currentLevel===5?'Nível máximo alcançado':`<strong>${nextCost} PP</strong><span>para alcançar o nível ${nextCost}</span>`}</div><div class="selected-skill-actions"><button type="button" data-skill="${activeSkill}" data-delta="-1" aria-label="Reduzir ${selected[1]}" ${currentLevel===0?'disabled':''}>− Reduzir</button><button type="button" class="primary" data-skill="${activeSkill}" data-delta="1" aria-label="Aumentar ${selected[1]}" ${currentLevel===5||nextCost>remaining(c)?'disabled':''}>+ Evoluir</button><button type="button" class="rollbtn" data-quickroll="${activeSkill}" aria-label="Rolar ${selected[1]}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-dados"/></svg> Rolar habilidade</button></div><div class="console-pp"><b>${remaining(c)} PP</b><span>disponíveis · ${spent(c)} investidos</span></div><p class="hint">2D6 + nível + circunstância do Mestre. A habilidade vai do nível 0 ao 5.</p></div></section>`;
+$('#charPane').innerHTML=constellation+`<div class="grid cols2 dossier-grid"><div class="panel identity-panel"><div class="row between"><div><div class="kicker">Identidade</div><h2>${esc(c.name)}</h2></div><button class="tiny danger" id="deleteChar">Excluir ficha</button></div><div class="fieldrow"><div class="field"><label class="label" for="charName">Nome</label><input id="charName" maxlength="60" value="${esc(c.name)}"></div><div class="field"><label class="label" for="charJob">Profissão</label><input id="charJob" maxlength="80" value="${esc(c.job)}"></div><div class="field"><label class="label" for="charAge">Idade</label><input type="number" id="charAge" min="14" max="100" value="${num(c.age,14,100)}"></div><div class="field"><label class="label" for="charOrigin">Origem</label><input id="charOrigin" maxlength="90" value="${esc(c.origin)}"></div></div><div class="space"></div><label class="label" for="charBio">Antecedentes / traços marcantes</label><textarea id="charBio" rows="5" maxlength="3000">${esc(c.bio)}</textarea><div class="space"></div><div class="note">Sua profissão influencia o que faz sentido na ficção, mas não restringe onde investir PP. A habilidade substitui a antiga perícia em D100.</div></div><div class="panel condition-panel"><div class="kicker">Condição atual</div><h2>Vida, Sanidade e Raiz</h2><div class="grid cols3" style="gap:9px">${[['hp','Vida',c.hpMax],['san','Sanidade',c.sanMax],['root','Raiz','']].map(([k,n,max])=>`<div class="stat stat-${k}"><div class="cap">${n}</div><div class="n mono">${num(c[k],0,k==='root'?20:99)}${max?`<span class="small">/${num(max,1,99)}</span>`:''}</div>${max?`<label class="maxline">máx <input type="number" class="maxinput" data-max="${k}" min="1" max="99" value="${num(max,1,99)}" aria-label="Máximo de ${n}"></label>`:''}<div class="statbtns"><button data-res="${k}" data-resdelta="-1" aria-label="Diminuir ${n}">−</button><button data-res="${k}" data-resdelta="1" aria-label="Aumentar ${n}">+</button></div></div>`).join('')}</div><p class="hint">Ajuste os recursos apenas quando o Mestre determinar. Todos iniciam com 1 ponto de Raiz, respeitando o Ato I.</p><div class="rule"></div><div class="row between"><div><div class="kicker">Pontos de Personagem</div><h2 style="margin:5px 0">${remaining(c)} <span class="small">PP livres</span></h2></div><span class="tag">${spent(c)} investidos · ${c.ppTotal} recebidos</span></div><div class="meter"><i style="width:${c.ppTotal?Math.min(100,spent(c)/c.ppTotal*100):0}%"></i></div><div class="row" style="margin-top:14px"><label class="small" for="awardPP">Pontos concedidos pelo Mestre</label><input type="number" class="numinput" id="awardPP" value="2" min="1" max="20"><button id="grantPP">+ Receber PP</button></div><p class="hint">Distribuição livre: comprar o próximo nível custa 1, 2, 3, 4 ou 5 PP. Reduzir um nível devolve seus pontos para corrigir a distribuição.</p></div></div>`;
 renderRollSkills();}
 function renderRollSkills(){$('#rollBtn').disabled=!char();$('#exportChar').disabled=!char();const sel=$('#rollSkill'), old=sel.value;const c=char();sel.innerHTML=SKILLS.map(([k,n])=>`<option value="${k}">${n} · nível ${num(c?.skills?.[k]||0,0,5)}</option>`).join('');if(SKILLS.some(([k])=>k===old))sel.value=old}
 function renderJournal(){const c=char();['clues','inventory','privateNotes'].forEach(k=>{$('#'+k).value=c?.[k]||'';$('#'+k).disabled=!c})}
@@ -1065,7 +1170,7 @@ function roll(){showResult(rollTest($('#rollSkill').value,$('#rollDiff').value,$
 function download(data,name){const blob=new Blob([data],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 const cleanName=n=>String(n||'ficha').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w-]/g,'_');
 function exportCurrent(){const c=char();if(!c)return;download(JSON.stringify({game:'A Terra Sob as Unhas',format:'ATSU-personagem-1',character:c,exported:new Date().toISOString()},null,2),`Ficha_${cleanName(c.name)}.json`);toast('Arquivo exportado. Envie-o ao Mestre para atualizar o escudo.')}
-function normalizeImported(raw){if(raw?.format!=='ATSU-personagem-1'||!raw?.character||!raw.character.skills)throw Error('Formato incompatível');const obj=raw.character,id='importado_'+Date.now().toString(36),c=fresh(id,String(obj.name||'Investigador').slice(0,60),String(obj.job||'').slice(0,80),num(obj.age,14,100),String(obj.origin||'').slice(0,90),String(obj.bio||'').slice(0,3000));c.skills=Object.fromEntries(SKILLS.map(([k])=>[k,num(obj.skills[k],0,5)]));c.ppTotal=num(obj.ppTotal,Math.max(10,spent(c)),999);if(c.ppTotal<spent(c))c.ppTotal=spent(c);c.hpMax=num(obj.hpMax,1,99);c.hp=num(obj.hp,0,c.hpMax);c.sanMax=num(obj.sanMax,1,99);c.san=num(obj.san,0,c.sanMax);c.root=num(obj.root,0,20);['clues','inventory','privateNotes'].forEach(k=>c[k]=String(obj[k]||'').slice(0,18000));c.history=Array.isArray(obj.history)?obj.history.slice(0,30).filter(v=>v&&typeof v==='object').map(cleanRoll):[];return c}
+function normalizeImported(raw){if(raw?.format!=='ATSU-personagem-1'||!raw?.character||!raw.character.skills)throw Error('Formato incompatível');const obj=raw.character,id='importado_'+Date.now().toString(36),c=fresh(id,String(obj.name||'Investigador').slice(0,60),String(obj.job||'').slice(0,80),num(obj.age,14,100),String(obj.origin||'').slice(0,90),String(obj.bio||'').slice(0,3000));c.portrait=ATSUPhoto.clean(obj.portrait);c.skills=Object.fromEntries(SKILLS.map(([k])=>[k,num(obj.skills[k],0,5)]));c.ppTotal=num(obj.ppTotal,Math.max(10,spent(c)),999);if(c.ppTotal<spent(c))c.ppTotal=spent(c);c.hpMax=num(obj.hpMax,1,99);c.hp=num(obj.hp,0,c.hpMax);c.sanMax=num(obj.sanMax,1,99);c.san=num(obj.san,0,c.sanMax);c.root=num(obj.root,0,20);['clues','inventory','privateNotes'].forEach(k=>c[k]=String(obj[k]||'').slice(0,18000));c.history=Array.isArray(obj.history)?obj.history.slice(0,30).filter(v=>v&&typeof v==='object').map(cleanRoll):[];return c}
 // Rolagem vinda de arquivo importado: só passam campos esperados, com o tipo esperado.
 function cleanRoll(r){return {date:String(r.date||'').slice(0,40),a:num(r.a,1,6),b:num(r.b,1,6),level:num(r.level,0,5),mod:num(r.mod,-3,3),total:num(r.total,-10,40),target:num(r.target,0,30),skill:String(r.skill||'').slice(0,40),ok:!!r.ok,crit:r.crit==='win'||r.crit==='lose'?r.crit:null}}
 // Diálogo da própria página no lugar de prompt()/confirm(), que alguns navegadores embutidos bloqueiam.
@@ -1087,8 +1192,8 @@ window.addEventListener('DOMContentLoaded',()=>{
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.tab)));
  $('#picker').addEventListener('click',ev=>{const b=ev.target.closest('[data-pick]');if(b&&state.characters[b.dataset.pick]){state.selected=b.dataset.pick;renderAll();}});
  $('#addChar').addEventListener('click',async()=>{const name=await ask({title:'Novo investigador',text:'Como ele ou ela se chama?',input:'',ok:'Criar'});if(!name)return;const id='novo_'+Date.now().toString(36);state.characters[id]=fresh(id,name.slice(0,60),'Investigador',25,'','');state.selected=id;renderAll();toast('Investigador criado.')});
- $('#charPane').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b)return;const c=char();if(b.dataset.skill){const k=b.dataset.skill,lv=num(c.skills[k],0,5),delta=Number(b.dataset.delta),next=lv+delta;if(next<0||next>5)return;if(delta>0&&remaining(c)<next)return;c.skills[k]=next;renderSheet();persist();return}if(b.dataset.res){const k=b.dataset.res,high=k==='root'?20:c[k+'Max'];c[k]=num(c[k]+Number(b.dataset.resdelta),0,high);renderSheet();persist();return}if(b.dataset.quickroll){openQuickRoll(b.dataset.quickroll);return}if(b.id==='deleteChar'){ask({title:`Excluir a ficha de ${c.name}?`,text:'A ficha some deste navegador. Se quiser guardá-la, exporte antes.',ok:'Excluir',danger:true}).then(sim=>{if(!sim||!state.characters[c.id])return;delete state.characters[c.id];state.selected=Object.keys(state.characters)[0]||null;renderAll();toast('Ficha excluída.')});return}if(b.id==='grantPP'){const add=num($('#awardPP').value,1,20);c.ppTotal=Math.min(999,c.ppTotal+add);renderSheet();persist();toast(`${add} PP adicionados.`)}});
- $('#charPane').addEventListener('change',ev=>{const c=char();if(ev.target.dataset.max){const k=ev.target.dataset.max;c[k+'Max']=num(ev.target.value,1,99);c[k]=num(c[k],0,c[k+'Max']);renderSheet();persist();return}const map={charName:'name',charJob:'job',charAge:'age',charOrigin:'origin',charBio:'bio'},k=map[ev.target.id];if(!k)return;c[k]=k==='age'?num(ev.target.value,14,100):ev.target.value.slice(0,k==='bio'?3000:90);renderAll()});
+ $('#charPane').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b)return;const c=char();if(!c)return;if(b.dataset.selectSkill){activeSkill=b.dataset.selectSkill;renderSheet();document.querySelector('[data-select-skill="'+activeSkill+'"]').focus({preventScroll:true});window.ATSUFX?.pulse(document.querySelector('.selected-skill'));return}if(b.id==='changePortrait'){$('#portraitFile').click();return}if(b.id==='removePortrait'){c.portrait='';renderAll();return}if(b.dataset.skill){const k=b.dataset.skill,lv=num(c.skills[k],0,5),delta=Number(b.dataset.delta),next=lv+delta;if(next<0||next>5)return;if(delta>0&&remaining(c)<next)return;c.skills[k]=next;renderSheet();persist();return}if(b.dataset.res){const k=b.dataset.res,high=k==='root'?20:c[k+'Max'];c[k]=num(c[k]+Number(b.dataset.resdelta),0,high);renderSheet();persist();return}if(b.dataset.quickroll){openQuickRoll(b.dataset.quickroll);return}if(b.id==='deleteChar'){ask({title:`Excluir a ficha de ${c.name}?`,text:'A ficha some deste navegador. Se quiser guardá-la, exporte antes.',ok:'Excluir',danger:true}).then(sim=>{if(!sim||!state.characters[c.id])return;delete state.characters[c.id];state.selected=Object.keys(state.characters)[0]||null;renderAll();toast('Ficha excluída.')});return}if(b.id==='grantPP'){const add=num($('#awardPP').value,1,20);c.ppTotal=Math.min(999,c.ppTotal+add);renderSheet();persist();toast(`${add} PP adicionados.`)}});
+ $('#charPane').addEventListener('change',async ev=>{const c=char();if(!c)return;if(ev.target.id==='portraitFile'){const file=ev.target.files?.[0];if(!file)return;ev.target.value='';const id=c.id,userStore=STORE;try{toast('Preparando retrato…');const photo=await ATSUPhoto.prepare(file);if(userStore!==STORE||!state.characters[id])return;state.characters[id].portrait=photo;renderAll();toast('Retrato atualizado. Salve a ficha online para usar em outro aparelho.')}catch(error){toast(error.message)}return;}if(ev.target.dataset.max){const k=ev.target.dataset.max;c[k+'Max']=num(ev.target.value,1,99);c[k]=num(c[k],0,c[k+'Max']);renderSheet();persist();return}const map={charName:'name',charJob:'job',charAge:'age',charOrigin:'origin',charBio:'bio'},k=map[ev.target.id];if(!k)return;c[k]=k==='age'?num(ev.target.value,14,100):ev.target.value.slice(0,k==='bio'?3000:90);renderAll()});
  ['clues','inventory','privateNotes'].forEach(k=>$('#'+k).addEventListener('input',ev=>{if(!char())return;char()[k]=ev.target.value.slice(0,18000);persist()}));
  $('#rollBtn').addEventListener('click',roll);$('#rollD4').addEventListener('click',()=>{$('#auxResult').textContent='1D4 = '+randomSide(4);window.ATSUFX?.pulse($('#auxResult'))});$('#rollD6').addEventListener('click',()=>{$('#auxResult').textContent='1D6 = '+randomSide(6);window.ATSUFX?.pulse($('#auxResult'))});$('#clearHistory').addEventListener('click',async()=>{if(!char())return;if(!await ask({title:'Apagar o histórico?',text:'As rolagens deste investigador somem deste navegador.',ok:'Apagar',danger:true}))return;char().history=[];renderHistory();persist()});
  $('#exportChar').addEventListener('click',exportCurrent);$('#printChar').addEventListener('click',()=>window.print());$('#importChar').addEventListener('click',()=>$('#importFile').click());$('#importFile').addEventListener('change',async ev=>{const f=ev.target.files?.[0];ev.target.value='';if(!f)return;if(f.size>10*1024*1024){toast('Arquivo grande demais (limite 10 MB).');return}try{const data=JSON.parse(await f.text());const list=data.format==='ATSU-backup-1'?[...Object.values(data.local?.characters||{}),...(data.online||[]).map(row=>row.character)]:[data.character];const imported=[];const seen=new Set();for(const raw of list){const signature=JSON.stringify({...raw,id:undefined});if(seen.has(signature))continue;seen.add(signature);const c=normalizeImported({format:data.format==='ATSU-backup-1'?'ATSU-personagem-1':data.format,character:raw});c.id='importado_'+crypto.randomUUID();imported.push(c)}if(!imported.length)throw Error('Backup vazio');for(const c of imported){state.characters[c.id]=c;state.selected=c.id}renderAll();toast('Ficha(s) importada(s) com sucesso.')}catch(e){toast('Não foi possível importar. Use um JSON exportado deste site.')}});

@@ -8,9 +8,11 @@ HTML=re.sub(r'window\.ATSU_ONLINE = .*?;', "window.ATSU_ONLINE = {url:'https://e
 ROOM='10000000-0000-0000-0000-000000000001'
 USERS={'master@example.com':'00000000-0000-0000-0000-000000000001','player@example.com':'00000000-0000-0000-0000-000000000002'}
 deny_images=False
+portraits_enabled=False
+member_photo_fetches=0
 room=None;members={};cards={};rolls=[];sheets={};files={};sent=[]
 def api(route):
- global room
+ global room,member_photo_fetches
  r=route.request;p=urlsplit(r.url);q=parse_qs(p.query);path=p.path
  user=r.headers.get('authorization','').replace('Bearer ','')
  body=r.post_data_json if 'application/json' in r.headers.get('content-type','') and r.post_data_buffer else None
@@ -26,10 +28,16 @@ def api(route):
   else:route.fulfill(json=[room] if room and (user in members or user==room['mestre_id']) else [])
  elif path=='/rest/v1/rpc/entrar_sala':
   if not room or body['p_codigo']!=room['codigo']:route.fulfill(status=400,json={'msg':'Sala não encontrada'});return
-  members.setdefault(user,{'user_id':user,'apelido':body['p_apelido'],'ficha':None});route.fulfill(json=room)
+  members.setdefault(user,{'user_id':user,'apelido':body['p_apelido'],'ficha':None,'updated_at':'initial'});route.fulfill(json=room)
  elif path=='/rest/v1/sala_membros':
-  if r.method=='GET':route.fulfill(json=copy.deepcopy(list(members.values())))
-  elif r.method=='PATCH':members[user].update(body);route.fulfill(status=204)
+  if r.method=='GET':
+   if 'ficha' in q['select'][0].split(','):member_photo_fetches+=1
+   selected=list(members.values())
+   if q.get('user_id',[''])[0].startswith('in.('):selected=[m for m in selected if m['user_id'] in q['user_id'][0][4:-1].split(',')]
+   fields=q['select'][0].split(',');route.fulfill(json=copy.deepcopy([{k:m.get(k) for k in fields} for m in selected]))
+  elif r.method=='PATCH':
+   if body.get('ficha',{} ) and body['ficha'].get('portrait') and not portraits_enabled:route.fulfill(status=400,json={'code':'23514','message':'check constraint'});return
+   members[user].update(body);route.fulfill(status=204)
   elif r.method=='DELETE':members.pop(user,None);route.fulfill(status=204)
  elif path=='/rest/v1/sala_rolagens':
   if r.method=='POST':rolls.append({**body,'user_id':user,'total':body['a']+body['b']+body['nivel']+body['modificador']});route.fulfill(status=201,body='')
@@ -59,8 +67,10 @@ with sync_playwright() as pw:
  browser=pw.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
  cm,m=page(browser,'master@example.com');m.locator('.app-nav [data-tab=mesa]').click();m.fill('#mesaName','Sala de teste');m.locator('#mesaCreate button').click();m.wait_for_selector('#mesaInside:not([hidden])');assert m.locator('#mesaPrivate').is_visible()
  cp,p=page(browser,'player@example.com');p.locator('.app-nav [data-tab=ficha]').click();assert p.locator('#picker button').count()==0
- p.click('#addChar');p.fill('#askInput','Jogador de teste');p.click('#askOk');p.wait_for_selector('#charName');p.locator('.app-nav [data-tab=mesa]').click();p.fill('#mesaCode','ABCDEF123456');p.locator('#mesaJoin button').click();p.wait_for_selector('#mesaInside:not([hidden])');assert p.locator('#mesaPrivate').is_hidden()
- p.click('#mesaShare');m.wait_for_function("document.getElementById('mesaMembers').textContent.includes('Jogador de teste')")
+ p.click('#addChar');p.fill('#askInput','Jogador de teste');p.click('#askOk');p.wait_for_selector('#charName');png_portrait=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC');p.locator('#portraitFile').set_input_files({'name':'retrato.png','mimeType':'image/png','buffer':png_portrait});p.wait_for_selector('.portrait-image img');p.locator('.app-nav [data-tab=mesa]').click();p.fill('#mesaCode','ABCDEF123456');p.locator('#mesaJoin button').click();p.wait_for_selector('#mesaInside:not([hidden])');assert p.locator('#mesaPrivate').is_hidden()
+ p.click('#mesaShare');p.wait_for_function("document.getElementById('mesaStatus').textContent.includes('portraits.sql')");m.wait_for_function("document.getElementById('mesaMembers').textContent.includes('Jogador de teste')");assert m.locator('.member-portrait').count()==0
+ portraits_enabled=True;p.click('#mesaShare');m.wait_for_function("document.querySelector('.member-portrait')?.naturalWidth>0")
+ before_fetches=member_photo_fetches;m.wait_for_timeout(4500);assert member_photo_fetches==before_fetches
  p.locator('.app-nav [data-tab=dados]').click();p.click('#rollBtn');m.wait_for_function("document.getElementById('mesaRolls').textContent.includes('Jogador de teste')");assert len(rolls)==1
  before=len(rolls);m.locator('#privateRollForm button[type=submit]').click();m.wait_for_selector('#privateHistory .hist');assert len(rolls)==before
  assert not any('privada' in path or 'segredo' in json.dumps(body) for _,path,body in sent if body)

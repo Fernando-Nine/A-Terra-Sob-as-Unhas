@@ -12,7 +12,7 @@ from pathlib import Path
 p=Path(__file__).resolve().parent
 source=p/'src'; out=p/'site'; out.mkdir(exist_ok=True)
 css=(source/'style.css').read_text(encoding='utf-8')
-for template,scripts,filename,opcional in [('jogadores.html',['online-config.js','effects.js','online.js','sala.js','mesa.js','jogadores.js'],'index.html',False),('escudo_mestre.html',['sala.js','mestre.js'],'escudo_mestre.html',True)]:
+for template,scripts,filename,opcional in [('jogadores.html',['online-config.js','effects.js','portrait.js','online.js','sala.js','mesa.js','jogadores.js'],'index.html',False),('escudo_mestre.html',['sala.js','mestre.js'],'escudo_mestre.html',True)]:
     if opcional and not ((source/template).exists() and (source/scripts[-1]).exists()):
         print(f'Pulado: {out/filename} (arquivos do escudo não estão nesta pasta)')
         continue

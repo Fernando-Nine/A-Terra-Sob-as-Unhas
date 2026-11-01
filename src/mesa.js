@@ -1,7 +1,7 @@
 // Salas autenticadas: o banco aplica as permissões; dados privados nunca saem daqui.
 window.ATSUMesa=(()=>{'use strict';
 let app=null,sala=null,epoch=0,poll=null,shareTimer=null,shareId='',lastSheet='',syncing=false,dragging=false,docs=[],privateRolls=[];
-const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),uuid=s=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(s),assets=new Map(),loadingAssets=new Map();let previewURL='',restoreCard=null;
+const $=id=>document.getElementById(id),api=(...args)=>ATSUOnline.api(...args),uuid=s=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(s),assets=new Map(),loadingAssets=new Map();let previewURL='',restoreCard=null;let memberCache=new Map();
 const message=(s,bad=false)=>{$('mesaStatus').textContent=s;$('mesaStatus').className=bad?'note mesa-error':'hint'};
 const master=()=>sala&&sala.mestre_id===app?.user.id;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
@@ -11,17 +11,19 @@ function roomKey(){return 'atsu.mesa.v2.'+app.user.id}
 function privateKey(){return 'atsu.mesa.privada.'+app.user.id+'.'+sala.id}
 function remember(){try{localStorage.setItem(roomKey(),sala.id)}catch{}}
 function revokeAssets(){loadingAssets.clear();if($('documentDialog').open)$('documentDialog').close();assets.forEach(v=>URL.revokeObjectURL(v));assets.clear()}
-function stop(){epoch++;clearInterval(poll);clearTimeout(shareTimer);poll=null;shareId='';lastSheet='';sala=null;privateRolls=[];app=null;syncing=false;revokeAssets();$('mesaInside').hidden=true;$('mesaLobby').hidden=false;$('privateHistory').replaceChildren();$('mesaMembers').replaceChildren();$('mesaRolls').replaceChildren();$('boardCanvas').replaceChildren();$('roomTag').hidden=true}
+function stop(){memberCache.clear();epoch++;clearInterval(poll);clearTimeout(shareTimer);poll=null;shareId='';lastSheet='';sala=null;privateRolls=[];app=null;syncing=false;revokeAssets();$('mesaInside').hidden=true;$('mesaLobby').hidden=false;$('privateHistory').replaceChildren();$('mesaMembers').replaceChildren();$('mesaRolls').replaceChildren();$('boardCanvas').replaceChildren();$('roomTag').hidden=true}
 function changed(){if(!sala||!shareId)return;if(!app.hasCharacter(shareId)){run(unshare);return}clearTimeout(shareTimer);shareTimer=setTimeout(()=>run(publish),450)}
 async function publish(){
  if(!sala||app.current()?.id!==shareId)return;
  const ficha=ATSUSala.limparFicha(app.current()),body=JSON.stringify(ficha);if(body===lastSheet)return;
  const version=epoch;
- await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha,apelido:ficha.name,updated_at:new Date().toISOString()},'PATCH');
- if(version===epoch){lastSheet=body;await sync()}
+ let portraitUnavailable=false;
+ try{await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha,apelido:ficha.name,updated_at:new Date().toISOString()},'PATCH')}
+ catch(error){if(version!==epoch)throw error;if(!ficha.portrait||error.code!=='23514')throw error;const {portrait,...summary}=ficha;await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha:summary,apelido:ficha.name,updated_at:new Date().toISOString()},'PATCH');portraitUnavailable=true;message('A ficha foi compartilhada sem foto. Para ativar os retratos na sala, o responsável precisa executar supabase/portraits.sql.',true)}
+ if(version===epoch){lastSheet=body;await sync()}return portraitUnavailable;
 }
-async function unshare(){if(!sala)return;shareId='';lastSheet='';await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha:null},'PATCH');await sync()}
-async function share(){if(!sala)return;if(!app.current()){message('Crie ou abra uma ficha antes de compartilhar.',true);return}shareId=app.current().id;lastSheet='';await publish();message('Somente o resumo da ficha está compartilhado com a sala.')}
+async function unshare(){if(!sala)return;shareId='';lastSheet='';await api('/rest/v1/sala_membros?sala_id=eq.'+sala.id+'&user_id=eq.'+app.user.id,{ficha:null,updated_at:new Date().toISOString()},'PATCH');await sync()}
+async function share(){if(!sala)return;if(!app.current()){message('Crie ou abra uma ficha antes de compartilhar.',true);return}shareId=app.current().id;lastSheet='';const unavailable=await publish();if(!unavailable)message('O resumo da ficha e seu retrato estão compartilhados com a sala.')}
 async function roll(r){
  if(!sala||!shareId||app.current()?.id!==shareId)return;
  const target=sala.id,name=String(app.current().name).slice(0,60);
@@ -34,7 +36,7 @@ async function rooms(){
 }
 async function enter(r){
  if(!uuid(r.id))throw Error('Sala inválida.');
- epoch++;clearInterval(poll);revokeAssets();shareId='';lastSheet='';sala=r;remember();syncing=false;
+ epoch++;clearInterval(poll);memberCache.clear();revokeAssets();shareId='';lastSheet='';sala=r;remember();syncing=false;
  // A função de entrada garante a associação autenticada, inclusive para o criador.
  const version=epoch;
  await api('/rest/v1/rpc/entrar_sala',{p_codigo:r.codigo,p_apelido:master()?'Mestre':'Investigador'});if(version!==epoch)return;
@@ -51,16 +53,20 @@ async function sync(force=false){
  if(!sala||syncing)return;syncing=true;const id=sala.id,version=epoch;
  try{
   const [members,rolls,cards]=await Promise.all([
-   api('/rest/v1/sala_membros?sala_id=eq.'+id+'&select=user_id,apelido,ficha,updated_at',undefined,'GET'),
+   api('/rest/v1/sala_membros?sala_id=eq.'+id+'&select=user_id,apelido,updated_at',undefined,'GET'),
    api('/rest/v1/sala_rolagens?sala_id=eq.'+id+'&select=*&order=created_at.desc&limit=40',undefined,'GET'),
    api('/rest/v1/sala_documentos?sala_id=eq.'+id+'&select=*&order=id',undefined,'GET')]);
-  if(version!==epoch)return;docs=cards;renderMembers(members);renderRolls(rolls);if(force||(!dragging&&!document.activeElement?.closest('.board-card')))renderBoard();
+  if(version!==epoch)return;
+  const changed=members.filter(m=>uuid(m.user_id)&&(!memberCache.has(m.user_id)||memberCache.get(m.user_id).updated_at!==m.updated_at));
+  for(let i=0;i<changed.length;i+=50){const ids=changed.slice(i,i+50).map(m=>m.user_id).join(',');const full=await api('/rest/v1/sala_membros?sala_id=eq.'+id+'&user_id=in.('+ids+')&select=user_id,apelido,ficha,updated_at',undefined,'GET');if(version!==epoch)return;full.forEach(m=>memberCache.set(m.user_id,m))}
+  for(const key of memberCache.keys())if(!members.some(m=>m.user_id===key))memberCache.delete(key);
+  docs=cards;renderMembers(members.map(m=>({...m,ficha:memberCache.get(m.user_id)?.ficha||null})));renderRolls(rolls);if(force||(!dragging&&!document.activeElement?.closest('.board-card')))renderBoard();
  }finally{if(version===epoch)syncing=false}
 }
 function renderMembers(members){
  const root=$('mesaMembers');root.replaceChildren();for(const m of members){
   const card=el('article',undefined,'member');card.append(el('b',m.ficha?.name||m.apelido||'Investigador'),el('span',m.user_id===sala.mestre_id?' · Mestre':m.user_id===app.user.id?' · você':'','small'));
-  const f=ATSUSala.limparFicha(m.ficha);if(f){card.append(el('p',f.job,'small'),el('p',`Vida ${f.hp}/${f.hpMax} · Sanidade ${f.san}/${f.sanMax} · Raiz ${f.root}`));const skills=el('div',undefined,'room-skills');for(const [k,n] of [['eloquencia','Eloquência'],['forca','Força'],['medicina','Medicina'],['ocultismo','Ocultismo'],['psicologia','Psicologia'],['visao','Visão'],['investigacao','Investigação']])skills.append(el('span',n+' '+f.skills[k],'pill'));card.append(skills)}else card.append(el('p','Ainda não compartilhou uma ficha.','small'));root.append(card);
+  const f=ATSUSala.limparFicha(m.ficha);if(f){if(f.portrait){const photo=el('img');photo.className='member-portrait';photo.src=f.portrait;photo.alt='Retrato de '+f.name;photo.loading='lazy';card.prepend(photo)}card.append(el('p',f.job,'small'),el('p',`Vida ${f.hp}/${f.hpMax} · Sanidade ${f.san}/${f.sanMax} · Raiz ${f.root}`));const skills=el('div',undefined,'room-skills');for(const [k,n] of [['eloquencia','Eloquência'],['forca','Força'],['medicina','Medicina'],['ocultismo','Ocultismo'],['psicologia','Psicologia'],['visao','Visão'],['investigacao','Investigação']])skills.append(el('span',n+' '+f.skills[k],'pill'));card.append(skills)}else card.append(el('p','Ainda não compartilhou uma ficha.','small'));root.append(card);
  }
  if(!members.length)root.append(el('p','Nenhum participante ainda.','small'));
 }

@@ -38,7 +38,7 @@ const topico=(codigo,tipo,cid)=>`${RAIZ}${codigo}/${tipo}/${cid||'+'}`;
 
 // Tudo que chega da rede é de terceiros: só passa o que tem o formato esperado.
 function limparFicha(f){if(!f||typeof f!=='object')return null;const hpMax=n(f.hpMax,1,99),sanMax=n(f.sanMax,1,99),skills={};HABILIDADES.forEach(k=>skills[k]=n(f.skills?.[k],0,5));
- return {name:String(f.name||'Sem nome').slice(0,60),job:String(f.job||'').slice(0,80),hp:n(f.hp,0,hpMax),hpMax,san:n(f.san,0,sanMax),sanMax,root:n(f.root,0,20),skills,ppTotal:n(f.ppTotal,0,999)}}
+ const portrait=window.ATSUPhoto?.clean(f.portrait)||'';return {...(portrait?{portrait}:{}),name:String(f.name||'Sem nome').slice(0,60),job:String(f.job||'').slice(0,80),hp:n(f.hp,0,hpMax),hpMax,san:n(f.san,0,sanMax),sanMax,root:n(f.root,0,20),skills,ppTotal:n(f.ppTotal,0,999)}}
 function limparRolagens(lista){return Array.isArray(lista)?lista.slice(0,MAX_ROLAGENS).filter(r=>r&&typeof r==='object').map(r=>({id:String(r.id||'').slice(0,16),t:Number(r.t)||0,name:String(r.name||'').slice(0,60),a:n(r.a,1,6),b:n(r.b,1,6),level:n(r.level,0,5),mod:n(r.mod,-3,3),total:n(r.total,-10,40),target:n(r.target,0,30),skill:String(r.skill||'').slice(0,40),ok:!!r.ok,crit:r.crit==='win'||r.crit==='lose'?r.crit:null})):[]}
 
 // papel 'jogador' publica e marca presença; 'mestre' só escuta.
